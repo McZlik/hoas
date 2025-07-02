@@ -20,4 +20,5 @@ custom_components/
 www/community/
 www/fonts/
 
+home-assistant_v2.db*
 home-assistant.log*
