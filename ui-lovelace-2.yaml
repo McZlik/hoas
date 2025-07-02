@@ -12,8 +12,8 @@ views:
       grid-template-rows: 0 repeat(2, fit-content(100%)) 0fr
       grid-template-areas: |
         "sidebar  .           .       .       ."
-        "sidebar  livingroom  hallway  bedroom  ."
-        "sidebar  media       other  home   ."
+        "sidebar  vardagsrum  studio  sovrum  ."
+        "sidebar  media       övrigt  hemma   ."
         "sidebar  footer      footer  footer  ."
       mediaquery:
         #phone
@@ -24,9 +24,9 @@ views:
           grid-template-areas: |
             ".  .           .        ."
             ".  sidebar     sidebar  ."
-            ".  livingroom  bedroom   ."
-            ".  hallway      other   ."
-            ".  media       home    ."
+            ".  vardagsrum  sovrum   ."
+            ".  studio      övrigt   ."
+            ".  media       hemma    ."
             ".  footer      footer   ."
             ".  .           .        ."
         #portrait
@@ -36,9 +36,9 @@ views:
           grid-template-rows: 0 repeat(3, fit-content(100%)) 0fr
           grid-template-areas: |
             "sidebar  .           .       ."
-            "sidebar  livingroom  bedroom  ."
-            "sidebar  hallway      other  ."
-            "sidebar  media       home   ."
+            "sidebar  vardagsrum  sovrum  ."
+            "sidebar  studio      övrigt  ."
+            "sidebar  media       hemma   ."
             "sidebar  footer      footer  ."
             "sidebar  .           .       ."
     cards:
@@ -100,26 +100,26 @@ views:
 
       #################################################
       #                                               #
-      #                  LIVINGROOM                   #
+      #                  VARDAGSRUM                   #
       #                                               #
       #################################################
 
       - type: grid
-        title: Livingroom
+        title: Vardagsrum
         view_layout:
-          grid-area: livingroom
+          grid-area: vardagsrum
         columns: 2
         cards:
 
           - type: custom:button-card
-            entity: light.livingroom_group
+            entity: light.vardagsrum_group
             name: Belysning
             template:
               - light
               - icon_hue
 
           - type: custom:button-card
-            entity: light.livingroom_horna
+            entity: light.vardagsrum_horna
             name: Hörnlampa
             template:
               - light
@@ -138,7 +138,7 @@ views:
                 }
               ]]]
             double_tap_action:
-              !include popup/livingroom_tv.yaml
+              !include popup/vardagsrum_tv.yaml
             template:
               - base
               - icon_tv
@@ -147,8 +147,8 @@ views:
           - type: custom:button-card
             entity: switch.deltaco_sh_p01_socket
             name: Balkong
-#            double_tap_action:
-#              !include popup/livingroom_balkong.yaml
+            double_tap_action:
+              !include popup/vardagsrum_balkong.yaml
             template:
               - base
               - icon_hue
@@ -156,36 +156,36 @@ views:
 
       #################################################
       #                                               #
-      #                    HALLWAY                     #
+      #                    STUDIO                     #
       #                                               #
       #################################################
 
       - type: grid
-        title: Hallway
+        title: Studio
         view_layout:
-          grid-area: hallway
+          grid-area: studio
         columns: 2
         cards:
 
           - type: custom:button-card
-            entity: switch.hallway_light_switch
-            name: Hall lamp
+            entity: light.studio_dator
+            name: Datorlampa
             template:
               - light
               - icon_hue
 
           - type: custom:button-card
-            entity: light.hallway_group
+            entity: light.studio_group
             name: Taklampor
             template:
               - light
-              - icon_sensor_motion
+              - icon_spot
 
           - type: custom:button-card
             entity: switch.imac
             name: Dator
-#            double_tap_action:
-#              !include popup/hallway_dator.yaml
+            double_tap_action:
+              !include popup/studio_dator.yaml
             template:
               - base
               - icon_imac
@@ -206,8 +206,8 @@ views:
           - type: custom:button-card
             entity: switch.gosund_monitors_switch
             name: Monitorer
-#            double_tap_action:
-#              !include popup/hallway_monitorer.yaml
+            double_tap_action:
+              !include popup/studio_monitorer.yaml
             template:
               - base
               - icon_monitors
@@ -223,19 +223,19 @@ views:
 
       #################################################
       #                                               #
-      #                    BEDROOM                     #
+      #                    SOVRUM                     #
       #                                               #
       #################################################
 
       - type: grid
-        title: Bedroom
+        title: Sovrum
         view_layout:
-          grid-area: bedroom
+          grid-area: sovrum
         columns: 2
         cards:
 
           - type: custom:button-card
-            entity: light.bedroom_group
+            entity: light.sovrum_group
             name: Sänglampor
             template:
               - light
@@ -244,8 +244,8 @@ views:
           - type: custom:button-card
             entity: climate.ac
             name: Klimat
-#            double_tap_action:
-#              !include popup/bedroom_klimat.yaml
+            double_tap_action:
+              !include popup/sovrum_klimat.yaml
             template:
               - base
               - icon_climate
@@ -264,8 +264,8 @@ views:
           - type: custom:button-card
             entity: switch.ps5_635_power
             name: Playstation
-#            double_tap_action:
-#              !include popup/bedroom_playstation.yaml
+            double_tap_action:
+              !include popup/sovrum_playstation.yaml
             template:
               - base
               - icon_ps5
@@ -274,8 +274,8 @@ views:
           - type: custom:button-card
             entity: media_player.samsung
             name: "Tv\u00B2"
-#            double_tap_action:
-#              !include popup/bedroom_tv2.yaml
+            double_tap_action:
+              !include popup/sovrum_tv2.yaml
             template:
               - base
               - icon_tv
@@ -307,10 +307,10 @@ views:
                   - type: conditional
                     conditions:
                       - entity: select.conditional_media
-                        state_not: Livingroom
+                        state_not: Vardagsrum
 
                       - entity: select.conditional_media
-                        state_not: Bedroom
+                        state_not: Sovrum
 
                       - entity: select.conditional_media
                         state_not: Spotify
@@ -330,10 +330,10 @@ views:
                   - type: conditional
                     conditions:
                       - entity: select.conditional_media
-                        state: Livingroom
+                        state: Vardagsrum
                     card:
                       type: custom:button-card
-                      entity: media_player.livingroom
+                      entity: media_player.vardagsrum
                       triggers_update: sensor.youtube_watching
                       template:
                         - conditional_media
@@ -342,10 +342,10 @@ views:
                   - type: conditional
                     conditions:
                       - entity: select.conditional_media
-                        state: Bedroom
+                        state: Sovrum
                     card:
                       type: custom:button-card
-                      entity: media_player.bedroom
+                      entity: media_player.sovrum
                       triggers_update: sensor.youtube_watching
                       template:
                         - conditional_media
@@ -378,17 +378,17 @@ views:
                 cards:
 
                   - type: custom:button-card
-                    entity: media_player.livingroom
+                    entity: media_player.vardagsrum
                     triggers_update: sensor.youtube_watching
-                    name: Livingroom
+                    name: Vardagsrum
                     template:
                       - media
                       - icon_apple_tv
 
                   - type: custom:button-card
-                    entity: media_player.bedroom
+                    entity: media_player.sovrum
                     triggers_update: sensor.youtube_watching
-                    name: Bedroom
+                    name: Sovrum
                     template:
                       - media
                       - icon_apple_tv
@@ -409,14 +409,14 @@ views:
 
       #################################################
       #                                               #
-      #                    OTHER                     #
+      #                    ÖVRIGT                     #
       #                                               #
       #################################################
 
       - type: grid
-        title: Other
+        title: Övrigt
         view_layout:
-          grid-area: other
+          grid-area: övrigt
         columns: 2
         cards:
 
@@ -430,8 +430,8 @@ views:
           - type: custom:button-card
             entity: switch.gosund_fan_switch
             name: "Fläkt\u00B2"
-#            double_tap_action:
-#              !include popup/hallway_flakt.yaml
+            double_tap_action:
+              !include popup/studio_flakt.yaml
             template:
               - base
               - icon_fan2
@@ -453,14 +453,14 @@ views:
 
       #################################################
       #                                               #
-      #                     HOME                     #
+      #                     HEMMA                     #
       #                                               #
       #################################################
 
       - type: grid
-        title: Home
+        title: Hemma
         view_layout:
-          grid-area: home
+          grid-area: hemma
         columns: 2
         cards:
 
@@ -469,8 +469,8 @@ views:
             name: Mattias
             triggers_update:
               - sensor.matte_last_changed
-#            double_tap_action:
-#              !include popup/home_mattias.yaml
+            double_tap_action:
+              !include popup/hemma_mattias.yaml
             variables:
               retain: sensor.matte_last_changed
             template:
@@ -482,8 +482,8 @@ views:
             name: Sanja
             triggers_update:
               - sensor.sanja_last_changed
-#            double_tap_action:
-#              !include popup/home_sanja.yaml
+            double_tap_action:
+              !include popup/hemma_sanja.yaml
             variables:
               retain: sensor.sanja_last_changed
             template:
@@ -499,7 +499,7 @@ views:
 
           - type: custom:button-card
             entity: script.home_arrive
-            name: Home
+            name: Hemma
             template:
               - base
               - icon_home

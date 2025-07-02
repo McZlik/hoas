@@ -38,7 +38,6 @@ sidebar:
       line-height: var(--sidebar-time-line-height);
       letter-spacing: 0.11vw;
       margin-left: -0.3vw;
-      color: rgba(255, 255, 255, 0.8);
     }
     @supports not (-moz-appearance:none) {
       .time-colon {
@@ -51,14 +50,14 @@ sidebar:
       line-height: var(--sidebar-line-height);
       font-weight: 200;
       letter-spacing: 0.07vw;
-      color: #6a7377;
+      color: var(--sidebar-primary-color);
     }
     b {
       font-weight: 700;
     }
-    p > b {
+    /*p > b {
       color: rgba(255, 255, 255, 0.8);
-    }
+    }*/
     /* portrait */
     @media screen and (max-width: 1200px) {
       .time {

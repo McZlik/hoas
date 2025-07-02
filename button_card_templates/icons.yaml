@@ -963,3 +963,10 @@ icon_home:
           </svg>
         `;
       ]]]
+
+icon_sensor_motion:
+  custom_fields:
+    icon: >
+      [[[
+        return `<ha-icon icon='mdi:motion-sensor'></ha-icon>`;
+      ]]]

@@ -9,7 +9,7 @@
             {{ hours }}<span class="time-colon">:</span>{{ minutes }}
           </span>
         date: >
-          <font color='#6a7377'><b>
+          <b>
           {% if strptime(states('sensor.date'), '%Y-%m-%d').day != None %}
           {% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
           {% set months = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -17,7 +17,7 @@
             {{ days[now().weekday()] }}<br>
             {{ strptime(states('sensor.date'), '%Y-%m-%d').day }} {{ months[now().month-1] }}
           {% endif %}
-          </b></font>
+          </b>
         greet: >
           <b>
           {% set time = now().hour %}
@@ -95,13 +95,13 @@
             {{ lights_on | length }} lights are on
 
           {% else %}
-            <font color='#6a7377'>Everything is turned off</font>
+            Everything is turned off
           {% endif %}
           </b>
         mailbox: >
           {% set mailbox = states('sensor.mailbox') %}
           {% if mailbox | int(default=0) > 0 %}
-            {{ '\U0001F4EC' }} <font color='#6a7377'><b>Mailbox ({{ mailbox }})</b></font>
+            {{ '\U0001F4EC' }} <b>Mailbox ({{ mailbox }})</b>
           {% endif %}
         vacuum: >
           {% set entity_id = 'vacuum.morty' %}
