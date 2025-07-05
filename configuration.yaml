@@ -15,7 +15,7 @@ lovelace:
       title: Swedisch Example
       icon: mdi:script
       show_in_sidebar: true
-      filename: ui-lovelace-2.yaml
+      filename: example/ui-lovelace.yaml
   resources:
     - url: /hacsfiles/button-card/button-card.js
       type: module
