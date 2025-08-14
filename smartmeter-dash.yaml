@@ -98,7 +98,7 @@ views:
               opposite: false
               name: Energie
         series:
-          - entity: sensor.energy_usage_peak_hourly
+          - entity: sensor.energy_usage_peak_hourly_2
             unit: kWh
             type: column
             name: High tariff usage
@@ -108,7 +108,7 @@ views:
             show:
               datalabels: false
               extremas: false
-          - entity: sensor.energy_usage_offpeak_hourly
+          - entity: sensor.energy_usage_offpeak_hourly_2
             unit: kWh
             type: column
             name: Low tariff usage

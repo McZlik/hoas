@@ -11,6 +11,11 @@ docker run -d --name homeassistant-dev --privileged --restart=unless-stopped -e 
 ## Required plugins
 - [HACS](https://hacs.xyz/)
 - Apexcharts-card
+- expander-card
+- mushroom
+- Catppuccin Theme
+- mini-graph-card
+- 
 - card-mod?
 - button-card?
 - layout-card?

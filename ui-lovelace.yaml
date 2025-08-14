@@ -1,98 +1,287 @@
 button_card_templates:
   !include_dir_merge_named button_card_templates
-
+  
 views:
-  - type: custom:grid-layout
-    title: Home
-    layout:
-      #default
-      margin: 0
-      grid-gap: var(--custom-layout-card-padding)
-      grid-template-columns: repeat(4, 1fr) 0
-      grid-template-rows: 0 repeat(2, fit-content(100%)) 0fr
-      grid-template-areas: |
-        "sidebar  .           .       .       ."
-        "sidebar  living  hallway kitchen ."
-        "sidebar  bathroom    office  .       ."
-        "sidebar  footer      footer  footer  ."
-      mediaquery:
-        #phone
-        "(max-width: 800px)":
-          grid-gap: calc(var(--custom-layout-card-padding) * 1.7)
-          grid-template-columns: 0 repeat(2, 1fr) 0
-          grid-template-rows: 0 repeat(5, fit-content(100%)) 0fr
-          grid-template-areas: |
-            ".  .           .        ."
-            ".  sidebar     sidebar  ."
-            ".  living  kitchen  ."
-            ".  hallway     office   ."
-            ".  bathroom    .        ."
-            ".  footer      footer   ."
-            ".  .           .        ."
-        #portrait
-        "(max-width: 1200px)":
-          grid-gap: var(--custom-layout-card-padding)
-          grid-template-columns: repeat(3, 1fr) 0
-          grid-template-rows: 0 repeat(3, fit-content(100%)) 0fr
-          grid-template-areas: |
-            "sidebar  .           .       ."
-            "sidebar  living  kitchen ."
-            "sidebar  hallway     office  ."
-            "sidebar  bathroom    .       ."
-            "sidebar  footer      footer  ."
-            "sidebar  .           .       ."
+  - title: Home
+    type: masonry
+    icon: mdi:home
+    path: home
     cards:
-
-      #extra_styles fix, do not remove
-      #also warn if theme is not set
-
-      - type: custom:button-card
-        view_layout:
-          grid-area: 1 / 2 / 2 / 5
-        name: SET THEME TO "mczlik" IN PROFILE
-        tap_action:
-          action: navigate
-          navigation_path: /profile
-        styles:
-          card:
-            - display: >
-                [[[
-                  return hass.themes.theme === 'mczlik'
-                      ? 'none'
-                      : 'initial';
-                ]]]
-          name:
-            - z-index: 1
-            - overflow: visible
-            - color: red
-            - font-weight: bolder
-            - font-size: xxx-large
-            - background: yellow
-
-      #################################################
-      #                                               #
-      #                    SIDEBAR                    #
-      #                                               #
-      #################################################
-      - type: vertical-stack
-        view_layout:
-          grid-area: sidebar
+      - type: horizontal-stack
         cards:
-
-          - type: custom:button-card
-            entity: sensor.template_sidebar
-            template: sidebar
-
-          - type: conditional
-            conditions:
-              - entity: input_boolean.laundry_display
-                state: 'on'
-            card:
-              type: custom:button-card
-              entity: timer.laundry
-              double_tap_action:
-                action: call-service
-                service: input_boolean.turn_off
-                service_data:
-                  entity_id: input_boolean.laundry_display
-              template: laundry
+          - type: custom:mushroom-person-card
+            entity: person.mczlik
+            name: Thijs
+          - type: custom:mushroom-person-card
+            entity: person.mczlik
+            name: Sal
+      - square: false
+        type: grid
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Living Room
+            icon: mdi:sofa
+            secondary: >-
+              {{ "🌡️ " ~ states("sensor.living_room_temperature_temperature") ~
+              " °C  💧 " ~ states("sensor.living_room_temperature_humidity") ~
+              "%" }}
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-dashboard/living-room
+            badge_color: ''
+            icon_color: |-
+              {% if is_state('light.living_room_dimmer', 'on') %}
+                orange
+              {% else %}
+                grey
+              {% endif %}
+            hold_action:
+              action: more-info
+          - type: custom:mushroom-template-card
+            primary: Hallway
+            icon: mdi:coat-rack
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-dashboard/hallway
+            badge_color: red
+            icon_color: |
+              {% if is_state('switch.hallway_light_switch', 'on') %}
+                orange
+              {% else %}
+                grey
+              {% endif %}
+            hold_action:
+              action: more-info
+            secondary: '{{states("sensor.hallway_motion_sensor_illuminance")}} lx'
+            badge_icon: >-
+              {% if is_state('binary_sensor.hallway_motion_sensor_occupancy',
+              'on') %}
+                mdi:motion-sensor
+              {% endif %}
+          - type: custom:mushroom-template-card
+            primary: Bathroom
+            icon: mdi:bathtub
+            secondary: >-
+              {{ "🌡️ " ~ states("sensor.bathroom_temperature_temperature") ~ "
+              °C  💧 " ~ states("sensor.bathroom_temperature_humidity") ~ "%" }}
+            badge_color: ''
+            hold_action:
+              action: more-info
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-dashboard/bathroom
+            icon_color: grey
+          - type: custom:mushroom-template-card
+            primary: Bedroom
+            icon: mdi:bed
+            secondary: >-
+              {{ "🌡️ " ~ states("sensor.bedroom_temperature_temperature") ~ "
+              °C  💧 " ~ states("sensor.bedroom_temperature_humidity") ~ "%" }}
+            badge_color: ''
+            hold_action:
+              action: more-info
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-dashboard/bedroom
+            icon_color: grey
+          - type: custom:mushroom-template-card
+            primary: Office
+            icon: mdi:desk
+            secondary: >-
+              {{ "🌡️ " ~ states("sensor.office_temperature_temperature") ~ "
+              °C  💧 " ~ states("sensor.office_temperature_humidity") ~ "%" }}
+            badge_color: ''
+            hold_action:
+              action: more-info
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-dashboard/office
+            icon_color: |-
+              {% if is_state('light.office_ceiling_lamp_01', 'on') %}
+                orange
+              {% else %}
+                grey
+              {% endif %}
+        columns: 2
+        title: Rooms
+  - type: masonry
+    path: living-room
+    title: Living Room
+    icon: mdi:sofa
+    cards:
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: Temperature
+            entities:
+              - entity: sensor.living_room_temperature_temperature
+                name: Temperature
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+          - type: custom:mini-graph-card
+            name: Humidity
+            entities:
+              - entity: sensor.living_room_temperature_humidity
+                name: Humidity
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+            line_color: blue
+      - square: true
+        type: grid
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.living_room_dimmer
+            icon: mdi:sofa
+            name: Living Room
+            show_brightness_control: true
+            show_color_control: false
+            use_light_color: false
+            collapsible_controls: true
+          - type: custom:mushroom-light-card
+            entity: light.dining_room_dimmer
+            icon: mdi:table-furniture
+            name: Dining Room
+            show_brightness_control: true
+            collapsible_controls: true
+        columns: 2
+        title: Lights
+    badges:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+          - type: entity
+            entity: sensor.living_room_temperature_temperature
+            use_entity_picture: false
+            icon: mdi:thermometer
+          - type: light
+            entity: light.living_room_dimmer
+            icon: mdi:lightbulb
+            use_light_color: false
+          - type: light
+            entity: light.dining_room_dimmer
+            icon: mdi:lightbulb
+    subview: true
+  - type: masonry
+    path: hallway
+    title: Hallway
+    icon: mdi:coat-rack
+    cards: []
+    badges:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+          - type: entity
+            entity: sensor.hallway_motion_sensor_illuminance
+            icon: mdi:brightness-5
+            use_entity_picture: false
+          - type: entity
+            entity: binary_sensor.hallway_motion_sensor_occupancy
+            use_entity_picture: false
+    subview: true
+  - type: masonry
+    title: Backyard
+    path: backyard
+    icon: mdi:flower
+    cards: []
+    subview: true
+    badges:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+  - type: masonry
+    path: bathroom
+    title: Bathroom
+    icon: mdi:bathtub
+    cards:
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: Temperature
+            entities:
+              - entity: sensor.bathroom_temperature_temperature
+                name: Temperature
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+          - type: custom:mini-graph-card
+            name: Humidity
+            entities:
+              - entity: sensor.bathroom_temperature_humidity
+                name: Humidity
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+            line_color: blue
+    subview: true
+    badges:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+  - type: masonry
+    title: Bedroom
+    path: bedroom
+    icon: mdi:bed
+    cards:
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: Temperature
+            entities:
+              - entity: sensor.bedroom_temperature_temperature
+                name: Temperature
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+          - type: custom:mini-graph-card
+            name: Humidity
+            entities:
+              - entity: sensor.bedroom_temperature_humidity
+                name: Humidity
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+            line_color: blue
+    subview: true
+    badges:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+  - type: masonry
+    path: office
+    title: Office
+    icon: mdi:desk
+    cards:
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: Humidity
+            entities:
+              - entity: sensor.office_temperature_temperature
+                name: Humidity
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+          - type: custom:mini-graph-card
+            name: Temperature
+            entities:
+              - entity: sensor.office_temperature_humidity
+                name: Temperature
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+            line_color: blue
+    subview: true
+    badges:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
