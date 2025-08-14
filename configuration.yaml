@@ -7,6 +7,9 @@ frontend:
 
 template: !include sidebar.yaml
 
+homeassistant:
+  packages: !include_dir_named packages
+
 lovelace:
   mode: yaml
   dashboards:
@@ -16,7 +19,15 @@ lovelace:
       icon: mdi:script
       show_in_sidebar: true
       filename: example/ui-lovelace.yaml
+    smartmeter-example:
+      mode: yaml
+      title: SmartMeter
+      icon: mdi:speedometer
+      show_in_sidebar: true
+      filename: smartmeter-dash.yaml
   resources:
+    - url: /hacsfiles/apexcharts-card/apexcharts-card.js
+      type: module
     - url: /hacsfiles/button-card/button-card.js
       type: module
     - url: /hacsfiles/lovelace-layout-card/layout-card.js

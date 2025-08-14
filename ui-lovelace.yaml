@@ -12,7 +12,7 @@ views:
       grid-template-rows: 0 repeat(2, fit-content(100%)) 0fr
       grid-template-areas: |
         "sidebar  .           .       .       ."
-        "sidebar  livingroom  hallway kitchen ."
+        "sidebar  living  hallway kitchen ."
         "sidebar  bathroom    office  .       ."
         "sidebar  footer      footer  footer  ."
       mediaquery:
@@ -24,7 +24,7 @@ views:
           grid-template-areas: |
             ".  .           .        ."
             ".  sidebar     sidebar  ."
-            ".  livingroom  kitchen  ."
+            ".  living  kitchen  ."
             ".  hallway     office   ."
             ".  bathroom    .        ."
             ".  footer      footer   ."
@@ -36,7 +36,7 @@ views:
           grid-template-rows: 0 repeat(3, fit-content(100%)) 0fr
           grid-template-areas: |
             "sidebar  .           .       ."
-            "sidebar  livingroom  kitchen ."
+            "sidebar  living  kitchen ."
             "sidebar  hallway     office  ."
             "sidebar  bathroom    .       ."
             "sidebar  footer      footer  ."
