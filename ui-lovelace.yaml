@@ -109,6 +109,9 @@ views:
     title: Living Room
     icon: mdi:sofa
     cards:
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.living
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
@@ -169,7 +172,10 @@ views:
     path: hallway
     title: Hallway
     icon: mdi:coat-rack
-    cards: []
+    cards:
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.driveway
     badges:
       - type: custom:mushroom-chips-card
         chips:
@@ -186,7 +192,10 @@ views:
     title: Backyard
     path: backyard
     icon: mdi:flower
-    cards: []
+    cards:
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.backyard
     subview: true
     badges:
       - type: custom:mushroom-chips-card
@@ -285,3 +294,82 @@ views:
       - type: custom:mushroom-chips-card
         chips:
           - type: back
+  - type: masonry
+    path: smartmeter
+    title: Smartmeter
+    icon: mdi:lightning-bolt
+    cards:
+      - type: custom:modern-circular-gauge
+        entity: sensor.currently_energy_delivered_watt
+        secondary: {}
+        tertiary: {}
+        min: 0
+        needle: true
+        start_from_zero: false
+        show_state: true
+        show_unit: true
+        adaptive_state_color: false
+        header_position: top
+        smooth_segments: true
+        show_header: true
+        show_icon: false
+        adaptive_icon_color: true
+        segments:
+          - from: 0
+            color:
+              - 143
+              - 255
+              - 50
+          - from: 800
+            color:
+              - 255
+              - 228
+              - 50
+          - from: 1500
+            color:
+              - 196
+              - 0
+              - 0
+        max: 2000
+        name: Current Usage
+        gauge_foreground_style:
+          opacity: 1
+          width: 8
+        gauge_background_style:
+          opacity: 1
+          width: 4
+      - type: custom:mini-graph-card
+        entities:
+          - entity: sensor.currently_energy_delivered_watt
+            name: Current Usage
+          - entity: sensor.currently_energy_returned_watt
+            name: Current Return
+        show:
+          fill: true
+        hours_to_show: 1
+        points_per_hour: 60
+        hour24: true
+        animate: true
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_mac_address
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_ip_address
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_startup_time
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_wifi_signal_strength_rssi
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_firmware_running_version
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_firmware_available_version
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_firmware_update_available
+          - type: custom:mushroom-entity-card
+            entity: switch.smartmeter_install_firmware_update
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_lastchanged
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.smartmeter_connectivity_status
+
