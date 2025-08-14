@@ -15,6 +15,8 @@ docker run -d --name homeassistant-dev --privileged --restart=unless-stopped -e 
 - mushroom
 - Catppuccin Theme
 - mini-graph-card
+- frigate
+- Advanced Camera Card
 - 
 - card-mod?
 - button-card?
