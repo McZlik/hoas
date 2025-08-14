@@ -1,8 +1,0 @@
-base:
-  template:
-    - extra_styles
-  variables:
-  aspect_ratio: 1/1
-  show_state: true
-  show_icon: false
-  styles:
