@@ -51,7 +51,6 @@ sensor:
         unit_of_measurement: kWh
         value_template: "{{ (states('sensor.hourly_energy_returned_offpeak')|float + states('sensor.hourly_energy_returned_peak')|float | round(2)) }}"
 
-      # TODO: Should these by in Wh?
       # dsmr_reading_electricity_currently_delivered_watt
       currently_energy_delivered_watt:
         friendly_name: "Current Energy usage"

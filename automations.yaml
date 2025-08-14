@@ -1,0 +1,30 @@
+- alias: Hallway Light Motion (Blueprint)
+  use_blueprint:
+    path: homeassistant/motion_light.yaml
+    input:
+      motion_entity: binary_sensor.hallway_motion_sensor_occupancy
+      light_target:
+        entity_id: light.hallway_light
+      no_motion_wait: 30
+
+- alias: Sunset lights
+  description: Activate lights 30 min before sunset
+  triggers:
+    - trigger: sun
+      event: sunset
+      offset: "-00:30:00"
+  conditions: []
+  actions:
+    - action: light.turn_on
+      metadata: {}
+      data:
+        brightness_pct: 25
+      target:
+        entity_id: light.dining_room_dimmer
+    - action: light.turn_on
+      metadata: {}
+      data:
+        brightness_pct: 75
+      target:
+        entity_id: light.living_room_dimmer
+  mode: single

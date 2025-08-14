@@ -17,6 +17,7 @@ docker run -d --name homeassistant-dev --privileged --restart=unless-stopped -e 
 - mini-graph-card
 - frigate
 - Advanced Camera Card
+- Modern Circular Gauge
 - 
 - card-mod?
 - button-card?
