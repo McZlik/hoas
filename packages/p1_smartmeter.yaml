@@ -1,0 +1,223 @@
+mqtt:
+  sensor:
+    - name: "SmartMeter MAC Address"
+      state_topic: "dsmr/smart_gateways/mac_address"
+    - name: "SmartMeter firmware running version"
+      state_topic: "dsmr/smart_gateways/running_firmware_version"
+    - name: "SmartMeter firmware available version"
+      state_topic: "dsmr/smart_gateways/available_firmware_version"
+    - name: "SmartMeter firmware update available"
+      state_topic: "dsmr/smart_gateways/update_available"
+    - name: "SmartMeter wifi signal strength (rssi)"
+      state_topic: "dsmr/smart_gateways/wifi_rssi"
+      unit_of_measurement: "dB"
+    - name: "SmartMeter startup time"
+      state_topic: "dsmr/smart_gateways/startup_time"
+      device_class: timestamp
+      icon: mdi:clock-start
+    - name: "SmartMeter IP Address"
+      state_topic: "dsmr/smart_gateways/ip_address"
+    - name: "SmartMeter WaterDelivered"
+      state_topic: "dsmr/consumption/water/delivered"
+      unit_of_measurement: "L"
+  switch:
+    - name: "SmartMeter Install firmware update?"
+      command_topic: "dsmr/smart_gateways/install_update"
+      payload_on: "yes"
+      payload_off: "no"
+
+sensor:
+  # Calculations per period
+  - platform: template
+    sensors:
+      daily_energy_delivered:
+        friendly_name: Daily Energy Delivered
+        unit_of_measurement: kWh
+        value_template: "{{ (states('sensor.daily_energy_delivered_offpeak')|float + states('sensor.daily_energy_delivered_peak')|float | round(2)) }}"
+      monthly_energy_delivered:
+        friendly_name: Monthly Energy Delivered
+        unit_of_measurement: kWh
+        value_template: "{{ (states('sensor.monthly_energy_delivered_offpeak')|float + states('sensor.monthly_energy_delivered_peak')|float | round(2)) }}"
+      daily_energy_returned:
+        friendly_name: Daily Energy Returned
+        unit_of_measurement: kWh
+        value_template: "{{ (states('sensor.daily_energy_returned_offpeak')|float + states('sensor.daily_energy_returned_peak')|float | round(2)) }}"
+      monthly_energy_returned:
+        friendly_name: Monthly Energy Returned
+        unit_of_measurement: kWh
+        value_template: "{{ (states('sensor.monthly_energy_returned_offpeak')|float + states('sensor.monthly_energy_returned_peak')|float | round(2)) }}"
+      hourly_energy_returned:
+        friendly_name: Hourly Energy Returned
+        unit_of_measurement: kWh
+        value_template: "{{ (states('sensor.hourly_energy_returned_offpeak')|float + states('sensor.hourly_energy_returned_peak')|float | round(2)) }}"
+
+      # dsmr_reading_electricity_currently_delivered_watt
+      currently_energy_delivered_watt:
+        friendly_name: "Current Energy usage"
+        unit_of_measurement: W
+        value_template: "{{ '%.0f'%(states('sensor.dsmr_reading_electricity_currently_delivered')|float * 1000 | float) | float }}"
+
+      # dsmr_reading_electricity_currently_returned_watt
+      currently_energy_returned_watt:
+        friendly_name: "Current Energy return"
+        unit_of_measurement: W
+        value_template: "{{ '%.0f'%(states('sensor.dsmr_reading_electricity_currently_returned')|float * 1000 | float) | float }}"
+
+      ##  smartmeter_last_changed
+      smartmeter_lastchanged:
+        friendly_name: "Wifi Signal Strength Last Changed"
+        value_template: >
+          {% set values = [
+            states.sensor.smartmeter_wifi_signal_strength_rssi.last_changed, ] %}
+          {{ values | min }}
+        device_class: timestamp
+
+      # Correction to current power sensors
+      currently_power_usage_l1_watt:
+        friendly_name: "Power Usage L1"
+        unique_id: smartmeter_power_usage_l1_watt
+        device_class: power
+        unit_of_measurement: W
+        value_template: "{{ states('sensor.dsmr_reading_phase_currently_delivered_l1') | float(0) | round(0) }}"
+      currently_power_usage_l2_watt:
+        friendly_name: "Power Usage L2"
+        unique_id: smartmeter_power_usage_l2_watt
+        device_class: power
+        unit_of_measurement: W
+        value_template: "{{ states('sensor.dsmr_reading_phase_currently_delivered_l2') | float(0) | round(0) }}"
+      currently_power_usage_l3_watt:
+        friendly_name: "Power Usage L3"
+        unique_id: smartmeter_power_usage_l4_watt
+        device_class: power
+        unit_of_measurement: W
+        value_template: "{{ states('sensor.dsmr_reading_phase_currently_delivered_l4') | float(0) | round(0) }}"
+
+      currently_power_return_l1_watt:
+        friendly_name: "Power Return L1"
+        unique_id: smartmeter_power_return_l1_watt
+        device_class: power
+        unit_of_measurement: W
+        value_template: "{{ states('sensor.dsmr_reading_phase_currently_returned_l1') | float(0) | round(0) }}"
+      currently_power_return_l2_watt:
+        friendly_name: "Power Return L2"
+        unique_id: smartmeter_power_return_l2_watt
+        device_class: power
+        unit_of_measurement: W
+        value_template: "{{ states('sensor.dsmr_reading_phase_currently_returned_l2') | float(0) | round(0) }}"
+      currently_power_return_l3_watt:
+        friendly_name: "Power Return L3"
+        unique_id: smartmeter_power_return_l3_watt
+        device_class: power
+        unit_of_measurement: W
+        value_template: "{{ states('sensor.dsmr_reading_phase_currently_returned_l3') | float(0) | round(0) }}"
+
+
+
+### Enable SmartGateways.nl SmartMeter Gateway - utility meter
+utility_meter:
+  gasusage_this_hour:
+    name: "Gas usage (hourly)"
+    unique_id: gas_usage_hourly
+    source: sensor.dsmr_consumption_gas_delivered
+    cycle: hourly
+  gasusage_today:
+    name: "Gas usage (daily)"
+    unique_id: gas_usage_daily
+    source: sensor.dsmr_consumption_gas_delivered
+    cycle: daily
+  gasusage_this_week:
+    name: "Gas usage (weekly)"
+    unique_id: gas_usage_weekly
+    source: sensor.dsmr_consumption_gas_delivered
+    cycle: weekly
+  gasusage_this_month:
+    name: "Gas usage (monthly)"
+    unique_id: gas_usage_monthly
+    source: sensor.dsmr_consumption_gas_delivered
+    cycle: monthly
+  gasusage_this_quarter:
+    name: "Gas usage (quarterly)"
+    unique_id: gas_usage_quarterly
+    source: sensor.dsmr_consumption_gas_delivered
+    cycle: quarterly
+  gasusage_this_year:
+    name: "Gas usage (yearly)"
+    unique_id: gas_usage_yearly
+    source: sensor.dsmr_consumption_gas_delivered
+    cycle: yearly
+
+
+
+  hourly_energy_delivered_offpeak:
+    name: "Energy usage offpeak (hourly)"
+    unique_id: energy_usage_offpeak_hourly
+    source: sensor.dsmr_reading_electricity_delivered_1
+    cycle: hourly
+  hourly_energy_delivered_peak:
+    name: "Energy usage peak (hourly)"
+    unique_id: energy_usage_peak_hourly
+    source: sensor.dsmr_reading_electricity_delivered_2
+    cycle: hourly
+
+  hourly_energy_returned_offpeak:
+    name: "Energy return offpeak (hourly)"
+    unique_id: energy_return_offpeak_hourly
+    source: sensor.dsmr_reading_electricity_returned_1
+    cycle: hourly
+  hourly_energy_returned_peak:
+    name: "Energy return peak (hourly)"
+    unique_id: energy_return_peak_hourly
+    source: sensor.dsmr_reading_electricity_returned_2
+    cycle: hourly
+
+  # Berekening van dagwaarden voor electriciteit hoog- en laagtarief
+  daily_energy_delivered_offpeak:
+    name: "Energy usage offpeak (daily)"
+    unique_id: energy_usage_offpeak_daily
+    source: sensor.dsmr_reading_electricity_delivered_1
+    cycle: daily
+  daily_energy_delivered_peak:
+    name: "Energy usage peak (daily)"
+    unique_id: energy_usage_peak_daily
+    source: sensor.dsmr_reading_electricity_delivered_2
+    cycle: daily
+
+  daily_energy_returned_offpeak:
+    name: "Energy return offpeak (daily)"
+    unique_id: energy_return_offpeak_daily
+    source: sensor.dsmr_reading_electricity_returned_1
+    cycle: daily
+  daily_energy_returned_peak:
+    name: "Energy return peak (daily)"
+    unique_id: energy_return_peak_daily
+    source: sensor.dsmr_reading_electricity_returned_2
+    cycle: daily
+
+  # Calculations per month
+  monthly_energy_delivered_offpeak:
+    name: "Energy usage offpeak (monthly)"
+    unique_id: energy_usage_offpeak_monthly
+    source: sensor.dsmr_reading_electricity_delivered_1
+    cycle: monthly
+  monthly_energy_delivered_peak:
+    name: "Energy usage peak (monthly)"
+    unique_id: energy_usage_peak_monthly
+    source: sensor.dsmr_reading_electricity_delivered_2
+    cycle: monthly
+
+  monthly_energy_returned_offpeak:
+    name: "Energy return offpeak (monthly)"
+    unique_id: energy_return_offpeak_monthly
+    source: sensor.dsmr_reading_electricity_returned_1
+    cycle: monthly
+  monthly_energy_returned_peak:
+    name: "Energy return peak (monthly)"
+    unique_id: energy_return_peak_monthly
+    source: sensor.dsmr_reading_electricity_returned_2
+    cycle: monthly
+
+template:
+  - binary_sensor:
+      - name: "Smartmeter connectivity status"
+        state: "{{ now() - states.sensor.smartmeter_wifi_signal_strength_rssi.last_changed < timedelta(minutes=10) }}"
+        device_class: connectivity

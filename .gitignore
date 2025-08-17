@@ -1,0 +1,24 @@
+# General
+.*
+!.gitignore
+!/.github
+
+# IDE
+.idea
+
+# HOAS
+backups
+blueprints
+deps
+tts
+
+secrets_template.yaml
+secrets.yaml
+
+custom_components/
+www/community/
+www/fonts/
+
+home-assistant_v2.db*
+home-assistant.log*
+.HA_VERSION

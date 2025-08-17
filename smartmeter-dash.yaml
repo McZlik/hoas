@@ -1,0 +1,213 @@
+button_card_templates:
+  !include_dir_merge_named button_card_templates
+
+views:
+  - title: Smart Gateways - Smart Meter Gateway
+    path: smart-gateways-p1-gateway
+    icon: mdi:lightning-bolt-circle
+    badges: []
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: gauge
+            entity: sensor.currently_energy_delivered_watt
+            max: 5000
+            min: 0
+            needle: true
+            severity:
+              green: 0
+              yellow: 800
+              red: 1500
+            name: Current usage
+          - type: gauge
+            entity: sensor.currently_energy_returned_watt
+            max: 5000
+            min: 0
+            needle: true
+            severity:
+              green: 0
+              yellow: 800
+              red: 1500
+            name: Current return
+      - type: vertical-stack
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.dsmr_reading_electricity_delivered_1
+                icon: mdi:lightning-bolt
+                secondary_info: none
+              - entity: sensor.dsmr_reading_electricity_delivered_2
+
+      - type: custom:apexcharts-card
+        experimental:
+          color_threshold: true
+        graph_span: 1h
+        show:
+          last_updated: true
+        apex_config:
+          yaxis:
+            - id: first
+              forceNiceScale: true
+              decimalsInFloat: 3
+        header:
+          standard_format: false
+          show: true
+          show_states: true
+          colorize_states: true
+          title: Current power usage and return
+        series:
+          - entity: sensor.currently_energy_delivered_watt
+            name: Usage
+            type: line
+            group_by:
+              func: last
+              duration: 1m
+            stroke_width: 3
+          - entity: sensor.currently_energy_returned_watt
+            name: Return
+            type: line
+            group_by:
+              func: last
+              duration: 1m
+            stroke_width: 5
+            show:
+              header_color_threshold: true
+            color_threshold:
+              - value: 0
+                color: '#D4ECE7'
+              - value: 500
+                color: '#9CD3C6'
+              - value: 800
+                color: '#71C1AE'
+              - value: 1500
+                color: '#38806F'
+              - value: 3000
+                color: '#19393F'
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        span:
+          start: day
+        header:
+          show: true
+          title: Usage last 24 hours
+        apex_config:
+          yaxis:
+            - id: first
+              forceNiceScale: true
+              decimalsInFloat: 2
+              opposite: false
+              name: Energie
+        series:
+          - entity: sensor.energy_usage_peak_hourly_2
+            unit: kWh
+            type: column
+            name: High tariff usage
+            color: '#EF810E'
+            group_by:
+              func: max
+            show:
+              datalabels: false
+              extremas: false
+          - entity: sensor.energy_usage_offpeak_hourly_2
+            unit: kWh
+            type: column
+            name: Low tariff usage
+            color: '#053752'
+            group_by:
+              func: max
+            show:
+              datalabels: false
+              extremas: false
+
+      - type: custom:apexcharts-card
+        experimental:
+          color_threshold: true
+        graph_span: 24h
+        show:
+          last_updated: true
+        header:
+          standard_format: false
+          show: true
+          show_states: true
+          colorize_states: true
+          title: Voltage per phase last 24 hours
+        span:
+          start: day
+        series:
+          - entity: sensor.dsmr_reading_phase_voltage_l1
+            type: line
+            group_by:
+              func: last
+              duration: 15m
+            stroke_width: 5
+          - entity: sensor.dsmr_reading_phase_voltage_l2
+            type: line
+            group_by:
+              func: last
+              duration: 15m
+            stroke_width: 5
+          - entity: sensor.dsmr_reading_phase_voltage_l3
+            type: line
+            group_by:
+              func: last
+              duration: 15m
+            stroke_width: 5
+      - type: custom:apexcharts-card
+        experimental:
+          color_threshold: true
+        graph_span: 24h
+        show:
+          last_updated: true
+        header:
+          standard_format: false
+          show: true
+          show_states: true
+          colorize_states: true
+          title: Current per phase last 24 hours
+        span:
+          start: day
+        series:
+          - entity: sensor.dsmr_reading_phase_power_current_l1
+            type: line
+            group_by:
+              func: last
+              duration: 1m
+            stroke_width: 2
+          - entity: sensor.dsmr_reading_phase_power_current_l2
+            type: line
+            group_by:
+              func: last
+              duration: 1m
+            stroke_width: 2
+          - entity: sensor.dsmr_reading_phase_power_current_l3
+            type: line
+            group_by:
+              func: last
+              duration: 1m
+            stroke_width: 2
+      - type: entities
+        entities:
+          - entity: sensor.smartmeter_mac_address
+          - entity: sensor.smartmeter_ip_address
+          - entity: sensor.smartmeter_startup_time
+          - entity: sensor.smartmeter_wifi_signal_strength_rssi
+          - entity: sensor.smartmeter_firmware_running_version
+          - entity: sensor.smartmeter_firmware_available_version
+          - entity: sensor.smartmeter_firmware_update_available
+          - entity: switch.smartmeter_install_firmware_update
+          - entity: sensor.smartmeter_lastchanged
+          - entity: binary_sensor.smartmeter_connectivity_status
+        show_header_toggle: false
+        title: SmartGateways.nl - Smart Meter Gateway
+        state_color: true
+      - type: gauge
+        entity: sensor.smartmeter_wifi_signal_strength_rssi
+        name: Gateway Signal Strength
+        unit: dB
+        min: -85
+        max: -20
+        needle: true
+        severity:
+          green: -67
+          yellow: -76
+          red: -90

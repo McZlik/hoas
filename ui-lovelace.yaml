@@ -1,0 +1,375 @@
+button_card_templates:
+  !include_dir_merge_named button_card_templates
+  
+views:
+  - title: Home
+    type: masonry
+    icon: mdi:home
+    path: home
+    cards:
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-person-card
+            entity: person.mczlik
+            name: Thijs
+          - type: custom:mushroom-person-card
+            entity: person.mczlik
+            name: Sal
+      - square: false
+        type: grid
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Living Room
+            icon: mdi:sofa
+            secondary: >-
+              {{ "🌡️ " ~ states("sensor.living_room_temperature_temperature") ~
+              " °C  💧 " ~ states("sensor.living_room_temperature_humidity") ~
+              "%" }}
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-dashboard/living-room
+            badge_color: ''
+            icon_color: |-
+              {% if is_state('light.living_room_dimmer', 'on') %}
+                orange
+              {% else %}
+                grey
+              {% endif %}
+            hold_action:
+              action: more-info
+          - type: custom:mushroom-template-card
+            primary: Hallway
+            icon: mdi:coat-rack
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-dashboard/hallway
+            badge_color: red
+            icon_color: |
+              {% if is_state('switch.hallway_light_switch', 'on') %}
+                orange
+              {% else %}
+                grey
+              {% endif %}
+            hold_action:
+              action: more-info
+            secondary: '{{states("sensor.hallway_motion_sensor_illuminance")}} lx'
+            badge_icon: >-
+              {% if is_state('binary_sensor.hallway_motion_sensor_occupancy',
+              'on') %}
+                mdi:motion-sensor
+              {% endif %}
+          - type: custom:mushroom-template-card
+            primary: Bathroom
+            icon: mdi:bathtub
+            secondary: >-
+              {{ "🌡️ " ~ states("sensor.bathroom_temperature_temperature") ~ "
+              °C  💧 " ~ states("sensor.bathroom_temperature_humidity") ~ "%" }}
+            badge_color: ''
+            hold_action:
+              action: more-info
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-dashboard/bathroom
+            icon_color: grey
+          - type: custom:mushroom-template-card
+            primary: Bedroom
+            icon: mdi:bed
+            secondary: >-
+              {{ "🌡️ " ~ states("sensor.bedroom_temperature_temperature") ~ "
+              °C  💧 " ~ states("sensor.bedroom_temperature_humidity") ~ "%" }}
+            badge_color: ''
+            hold_action:
+              action: more-info
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-dashboard/bedroom
+            icon_color: grey
+          - type: custom:mushroom-template-card
+            primary: Office
+            icon: mdi:desk
+            secondary: >-
+              {{ "🌡️ " ~ states("sensor.office_temperature_temperature") ~ "
+              °C  💧 " ~ states("sensor.office_temperature_humidity") ~ "%" }}
+            badge_color: ''
+            hold_action:
+              action: more-info
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-dashboard/office
+            icon_color: |-
+              {% if is_state('light.office_ceiling_lamp_01', 'on') %}
+                orange
+              {% else %}
+                grey
+              {% endif %}
+        columns: 2
+        title: Rooms
+  - type: masonry
+    path: living-room
+    title: Living Room
+    icon: mdi:sofa
+    cards:
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.living
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: Temperature
+            entities:
+              - entity: sensor.living_room_temperature_temperature
+                name: Temperature
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+          - type: custom:mini-graph-card
+            name: Humidity
+            entities:
+              - entity: sensor.living_room_temperature_humidity
+                name: Humidity
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+            line_color: blue
+      - square: true
+        type: grid
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.living_room_dimmer
+            icon: mdi:sofa
+            name: Living Room
+            show_brightness_control: true
+            show_color_control: false
+            use_light_color: false
+            collapsible_controls: true
+          - type: custom:mushroom-light-card
+            entity: light.dining_room_dimmer
+            icon: mdi:table-furniture
+            name: Dining Room
+            show_brightness_control: true
+            collapsible_controls: true
+        columns: 2
+        title: Lights
+    badges:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+          - type: entity
+            entity: sensor.living_room_temperature_temperature
+            use_entity_picture: false
+            icon: mdi:thermometer
+          - type: light
+            entity: light.living_room_dimmer
+            icon: mdi:lightbulb
+            use_light_color: false
+          - type: light
+            entity: light.dining_room_dimmer
+            icon: mdi:lightbulb
+    subview: true
+  - type: masonry
+    path: hallway
+    title: Hallway
+    icon: mdi:coat-rack
+    cards:
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.driveway
+    badges:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+          - type: entity
+            entity: sensor.hallway_motion_sensor_illuminance
+            icon: mdi:brightness-5
+            use_entity_picture: false
+          - type: entity
+            entity: binary_sensor.hallway_motion_sensor_occupancy
+            use_entity_picture: false
+    subview: true
+  - type: masonry
+    title: Backyard
+    path: backyard
+    icon: mdi:flower
+    cards:
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.backyard
+    subview: true
+    badges:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+  - type: masonry
+    path: bathroom
+    title: Bathroom
+    icon: mdi:bathtub
+    cards:
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: Temperature
+            entities:
+              - entity: sensor.bathroom_temperature_temperature
+                name: Temperature
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+          - type: custom:mini-graph-card
+            name: Humidity
+            entities:
+              - entity: sensor.bathroom_temperature_humidity
+                name: Humidity
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+            line_color: blue
+    subview: true
+    badges:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+  - type: masonry
+    title: Bedroom
+    path: bedroom
+    icon: mdi:bed
+    cards:
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: Temperature
+            entities:
+              - entity: sensor.bedroom_temperature_temperature
+                name: Temperature
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+          - type: custom:mini-graph-card
+            name: Humidity
+            entities:
+              - entity: sensor.bedroom_temperature_humidity
+                name: Humidity
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+            line_color: blue
+    subview: true
+    badges:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+  - type: masonry
+    path: office
+    title: Office
+    icon: mdi:desk
+    cards:
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: Humidity
+            entities:
+              - entity: sensor.office_temperature_temperature
+                name: Humidity
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+          - type: custom:mini-graph-card
+            name: Temperature
+            entities:
+              - entity: sensor.office_temperature_humidity
+                name: Temperature
+            show:
+              fill: true
+            hours_to_show: 12
+            points_per_hour: 2
+            line_color: blue
+    subview: true
+    badges:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+  - type: masonry
+    path: smartmeter
+    title: Smartmeter
+    icon: mdi:lightning-bolt
+    cards:
+      - type: custom:modern-circular-gauge
+        entity: sensor.currently_energy_delivered_watt
+        secondary: {}
+        tertiary: {}
+        min: 0
+        needle: true
+        start_from_zero: false
+        show_state: true
+        show_unit: true
+        adaptive_state_color: false
+        header_position: top
+        smooth_segments: true
+        show_header: true
+        show_icon: false
+        adaptive_icon_color: true
+        segments:
+          - from: 0
+            color:
+              - 143
+              - 255
+              - 50
+          - from: 800
+            color:
+              - 255
+              - 228
+              - 50
+          - from: 1500
+            color:
+              - 196
+              - 0
+              - 0
+        max: 2000
+        name: Current Usage
+        gauge_foreground_style:
+          opacity: 1
+          width: 8
+        gauge_background_style:
+          opacity: 1
+          width: 4
+      - type: custom:mini-graph-card
+        entities:
+          - entity: sensor.currently_energy_delivered_watt
+            name: Current Usage
+          - entity: sensor.currently_energy_returned_watt
+            name: Current Return
+        show:
+          fill: true
+        hours_to_show: 1
+        points_per_hour: 60
+        hour24: true
+        animate: true
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_mac_address
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_ip_address
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_startup_time
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_wifi_signal_strength_rssi
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_firmware_running_version
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_firmware_available_version
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_firmware_update_available
+          - type: custom:mushroom-entity-card
+            entity: switch.smartmeter_install_firmware_update
+          - type: custom:mushroom-entity-card
+            entity: sensor.smartmeter_lastchanged
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.smartmeter_connectivity_status
+
