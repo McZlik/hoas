@@ -1,0 +1,9 @@
+shell_command:
+  git_pull: 'git -C /config pull --ff-only'
+
+script:
+  git_pull:
+    alias: Git Pull Config
+    sequence:
+      - service: shell_command.git_pull
+    mode: single
