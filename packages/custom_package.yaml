@@ -6,4 +6,10 @@ script:
     alias: Git Pull Config
     sequence:
       - service: shell_command.git_pull
+      - delay: "00:00:02"
+      - service: persistent_notification.create
+        data:
+          title: "Git Pull Completed"
+          message: "Configuration updated. Restart Home Assistant to apply all changes."
+          notification_id: git_pull_notice
     mode: single
