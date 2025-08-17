@@ -1,5 +1,8 @@
+#shell_command:
+#  git_pull: 'git -C /config pull --ff-only'
 shell_command:
-  git_pull: 'git -C /config pull --ff-only'
+  git_pull: 'bash -c "cd /config && git fetch origin && git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)"'
+
 
 # Helper flag to indicate a restart is required
 input_boolean:
