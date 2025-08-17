@@ -4,6 +4,7 @@ shell_command:
 script:
   git_pull:
     alias: Git Pull Config
+    icon: mdi:git
     sequence:
       - service: shell_command.git_pull
       - delay: "00:00:02"
@@ -12,4 +13,11 @@ script:
           title: "Git Pull Completed"
           message: "Configuration updated. Restart Home Assistant to apply all changes."
           notification_id: git_pull_notice
+    mode: single
+
+  restart_homeassistant:
+    alias: Restart Home Assistant
+    icon: mdi:restart
+    sequence:
+      - service: homeassistant.restart
     mode: single
