@@ -33,35 +33,35 @@ sensor:
       daily_energy_delivered:
         friendly_name: Daily Energy Delivered
         unit_of_measurement: kWh
-        value_template: "{{ (states('sensor.daily_energy_delivered_offpeak')|float + states('sensor.daily_energy_delivered_peak')|float | round(2)) }}"
+        value_template: "{{ (states('sensor.daily_energy_delivered_offpeak') | float(0) + states('sensor.daily_energy_delivered_peak') | float(0)) | round(2) }}"
       monthly_energy_delivered:
         friendly_name: Monthly Energy Delivered
         unit_of_measurement: kWh
-        value_template: "{{ (states('sensor.monthly_energy_delivered_offpeak')|float + states('sensor.monthly_energy_delivered_peak')|float | round(2)) }}"
+        value_template: "{{ (states('sensor.monthly_energy_delivered_offpeak') | float(0) + states('sensor.monthly_energy_delivered_peak') | float(0)) | round(2) }}"
       daily_energy_returned:
         friendly_name: Daily Energy Returned
         unit_of_measurement: kWh
-        value_template: "{{ (states('sensor.daily_energy_returned_offpeak')|float + states('sensor.daily_energy_returned_peak')|float | round(2)) }}"
+        value_template: "{{ (states('sensor.daily_energy_returned_offpeak') | float(0) + states('sensor.daily_energy_returned_peak') | float(0)) | round(2) }}"
       monthly_energy_returned:
         friendly_name: Monthly Energy Returned
         unit_of_measurement: kWh
-        value_template: "{{ (states('sensor.monthly_energy_returned_offpeak')|float + states('sensor.monthly_energy_returned_peak')|float | round(2)) }}"
+        value_template: "{{ (states('sensor.monthly_energy_returned_offpeak') | float(0) + states('sensor.monthly_energy_returned_peak') | float(0)) | round(2) }}"
       hourly_energy_returned:
         friendly_name: Hourly Energy Returned
         unit_of_measurement: kWh
-        value_template: "{{ (states('sensor.hourly_energy_returned_offpeak')|float + states('sensor.hourly_energy_returned_peak')|float | round(2)) }}"
+        value_template: "{{ (states('sensor.hourly_energy_returned_offpeak') | float(0) + states('sensor.hourly_energy_returned_peak') | float(0)) | round(2) }}"
 
       # dsmr_reading_electricity_currently_delivered_watt
       currently_energy_delivered_watt:
         friendly_name: "Current Energy usage"
         unit_of_measurement: W
-        value_template: "{{ '%.0f'%(states('sensor.dsmr_reading_electricity_currently_delivered')|float * 1000 | float) | float }}"
+        value_template: "{{ (states('sensor.dsmr_reading_electricity_currently_delivered') | float(0) * 1000) | round(0) | round(2) }}"
 
       # dsmr_reading_electricity_currently_returned_watt
       currently_energy_returned_watt:
         friendly_name: "Current Energy return"
         unit_of_measurement: W
-        value_template: "{{ '%.0f'%(states('sensor.dsmr_reading_electricity_currently_returned')|float * 1000 | float) | float }}"
+        value_template: "{{ (states('sensor.dsmr_reading_electricity_currently_returned') | float(0) * 1000) | round(0) | round(2) }}"
 
       ##  smartmeter_last_changed
       smartmeter_lastchanged:
@@ -87,10 +87,10 @@ sensor:
         value_template: "{{ states('sensor.dsmr_reading_phase_currently_delivered_l2') | float(0) | round(0) }}"
       currently_power_usage_l3_watt:
         friendly_name: "Power Usage L3"
-        unique_id: smartmeter_power_usage_l4_watt
+        unique_id: smartmeter_power_usage_l3_watt
         device_class: power
         unit_of_measurement: W
-        value_template: "{{ states('sensor.dsmr_reading_phase_currently_delivered_l4') | float(0) | round(0) }}"
+        value_template: "{{ states('sensor.dsmr_reading_phase_currently_delivered_l3') | float(0) | round(0) }}"
 
       currently_power_return_l1_watt:
         friendly_name: "Power Return L1"
@@ -110,7 +110,6 @@ sensor:
         device_class: power
         unit_of_measurement: W
         value_template: "{{ states('sensor.dsmr_reading_phase_currently_returned_l3') | float(0) | round(0) }}"
-
 
 
 ### Enable SmartGateways.nl SmartMeter Gateway - utility meter

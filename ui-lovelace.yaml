@@ -1,19 +1,37 @@
 button_card_templates:
   !include_dir_merge_named button_card_templates
-  
+
+kiosk_mode:
+  hide_header: true
+  hide_sidebar: false
+
 views:
   - title: Home
     type: masonry
     icon: mdi:home
     path: home
     cards:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: menu
+          - type: action
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/smartmeter
+            icon: mdi:speedometer
+          - type: action
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/system
+            icon: mdi:cog
+
       - type: horizontal-stack
         cards:
           - type: custom:mushroom-person-card
-            entity: person.mczlik
+            entity: person.thijs
             name: Thijs
           - type: custom:mushroom-person-card
-            entity: person.mczlik
+            entity: person.sal
             name: Sal
       - square: false
         type: grid
@@ -27,7 +45,7 @@ views:
               "%" }}
             tap_action:
               action: navigate
-              navigation_path: /dashboard-dashboard/living-room
+              navigation_path: /lovelace/living-room
             badge_color: ''
             icon_color: |-
               {% if is_state('light.living_room_dimmer', 'on') %}
@@ -42,7 +60,7 @@ views:
             icon: mdi:coat-rack
             tap_action:
               action: navigate
-              navigation_path: /dashboard-dashboard/hallway
+              navigation_path: /lovelace/hallway
             badge_color: red
             icon_color: |
               {% if is_state('switch.hallway_light_switch', 'on') %}
@@ -69,7 +87,7 @@ views:
               action: more-info
             tap_action:
               action: navigate
-              navigation_path: /dashboard-dashboard/bathroom
+              navigation_path: /lovelace/bathroom
             icon_color: grey
           - type: custom:mushroom-template-card
             primary: Bedroom
@@ -82,7 +100,7 @@ views:
               action: more-info
             tap_action:
               action: navigate
-              navigation_path: /dashboard-dashboard/bedroom
+              navigation_path: /lovelace/bedroom
             icon_color: grey
           - type: custom:mushroom-template-card
             primary: Office
@@ -95,12 +113,25 @@ views:
               action: more-info
             tap_action:
               action: navigate
-              navigation_path: /dashboard-dashboard/office
+              navigation_path: /lovelace/office
             icon_color: |-
               {% if is_state('light.office_ceiling_lamp_01', 'on') %}
                 orange
               {% else %}
                 grey
+              {% endif %}
+          - type: custom:mushroom-template-card
+            primary: Backyard
+            icon: mdi:flower
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/backyard
+            badge_color: red
+            hold_action:
+              action: more-info
+            badge_icon: >-
+              {% if is_state('binary_sensor.binary_sensor.backyard_all_occupancy', 'on') %}
+                mdi:motion-sensor
               {% endif %}
         columns: 2
         title: Rooms
@@ -109,6 +140,20 @@ views:
     title: Living Room
     icon: mdi:sofa
     cards:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+          - type: entity
+            entity: sensor.living_room_temperature_temperature
+            use_entity_picture: false
+            icon: mdi:thermometer
+          - type: light
+            entity: light.living_room_dimmer
+            icon: mdi:lightbulb
+            use_light_color: false
+          - type: light
+            entity: light.dining_room_dimmer
+            icon: mdi:lightbulb
       - type: custom:advanced-camera-card
         cameras:
           - camera_entity: camera.living
@@ -133,7 +178,7 @@ views:
             hours_to_show: 12
             points_per_hour: 2
             line_color: blue
-      - square: true
+      - square: false
         type: grid
         cards:
           - type: custom:mushroom-light-card
@@ -152,31 +197,12 @@ views:
             collapsible_controls: true
         columns: 2
         title: Lights
-    badges:
-      - type: custom:mushroom-chips-card
-        chips:
-          - type: back
-          - type: entity
-            entity: sensor.living_room_temperature_temperature
-            use_entity_picture: false
-            icon: mdi:thermometer
-          - type: light
-            entity: light.living_room_dimmer
-            icon: mdi:lightbulb
-            use_light_color: false
-          - type: light
-            entity: light.dining_room_dimmer
-            icon: mdi:lightbulb
     subview: true
   - type: masonry
     path: hallway
     title: Hallway
     icon: mdi:coat-rack
     cards:
-      - type: custom:advanced-camera-card
-        cameras:
-          - camera_entity: camera.driveway
-    badges:
       - type: custom:mushroom-chips-card
         chips:
           - type: back
@@ -187,25 +213,82 @@ views:
           - type: entity
             entity: binary_sensor.hallway_motion_sensor_occupancy
             use_entity_picture: false
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.driveway
+      - square: false
+        type: grid
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.hallway_light
+            icon: mdi:lightbulb
+            name: Hallway
+            show_brightness_control: false
+            show_color_control: false
+            use_light_color: false
+            collapsible_controls: true
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.hallway_motion_sensor_occupancy
+            name: Occupancy
+          - type: custom:mushroom-entity-card
+            entity: sensor.hallway_motion_sensor_illuminance
+            name: Illuminance
+        columns: 2
     subview: true
   - type: masonry
     title: Backyard
     path: backyard
     icon: mdi:flower
     cards:
-      - type: custom:advanced-camera-card
-        cameras:
-          - camera_entity: camera.backyard
-    subview: true
-    badges:
       - type: custom:mushroom-chips-card
         chips:
           - type: back
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.backyard
+      - square: false
+        type: grid
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.backyard_person_occupancy
+            name: Person occupancy
+            icon: mdi:account
+            icon_color: |-
+              {% if is_state('binary_sensor.backyard_person_occupancy', 'on') %}
+                orange
+              {% else %}
+                grey
+              {% endif %}
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.backyard_dog_occupancy
+            icon: mdi:dog
+            name: Dog occupancy
+            icon_color: |-
+              {% if is_state('binary_sensor.backyard_dog_occupancy', 'on') %}
+                orange
+              {% else %}
+                grey
+              {% endif %}
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.backyard_cat_occupancy
+            icon: mdi:cat
+            name: Cat occupancy
+            icon_color: |-
+              {% if is_state('binary_sensor.backyard_cat_occupancy', 'on') %}
+                orange
+              {% else %}
+                grey
+              {% endif %}
+        columns: 2
+    subview: true
   - type: masonry
     path: bathroom
     title: Bathroom
     icon: mdi:bathtub
     cards:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
@@ -228,15 +311,14 @@ views:
             points_per_hour: 2
             line_color: blue
     subview: true
-    badges:
-      - type: custom:mushroom-chips-card
-        chips:
-          - type: back
   - type: masonry
     title: Bedroom
     path: bedroom
     icon: mdi:bed
     cards:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
@@ -259,15 +341,14 @@ views:
             points_per_hour: 2
             line_color: blue
     subview: true
-    badges:
-      - type: custom:mushroom-chips-card
-        chips:
-          - type: back
   - type: masonry
     path: office
     title: Office
     icon: mdi:desk
     cards:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
@@ -290,15 +371,14 @@ views:
             points_per_hour: 2
             line_color: blue
     subview: true
-    badges:
-      - type: custom:mushroom-chips-card
-        chips:
-          - type: back
   - type: masonry
     path: smartmeter
     title: Smartmeter
     icon: mdi:lightning-bolt
     cards:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
       - type: custom:modern-circular-gauge
         entity: sensor.currently_energy_delivered_watt
         secondary: {}
@@ -338,18 +418,78 @@ views:
         gauge_background_style:
           opacity: 1
           width: 4
-      - type: custom:mini-graph-card
-        entities:
-          - entity: sensor.currently_energy_delivered_watt
-            name: Current Usage
-          - entity: sensor.currently_energy_returned_watt
-            name: Current Return
+      - type: custom:apexcharts-card
+        experimental:
+          color_threshold: true
+        graph_span: 1h
         show:
-          fill: true
-        hours_to_show: 1
-        points_per_hour: 60
-        hour24: true
-        animate: true
+          last_updated: true
+        apex_config:
+          yaxis:
+            - id: first
+              forceNiceScale: true
+              decimalsInFloat: 3
+          fill:
+            type: solid
+            opacity: 0.25
+        header:
+          standard_format: false
+          show: true
+          show_states: true
+          colorize_states: true
+          title: Past hour - median per minute
+        series:
+          - entity: sensor.currently_energy_delivered_watt
+            name: Usage
+            type: area
+            group_by:
+              func: median
+              duration: 1m
+            stroke_width: 4
+          - entity: sensor.currently_energy_returned_watt
+            name: Return
+            type: line
+            group_by:
+              func: median
+              duration: 1m
+            stroke_width: 4
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        span:
+          start: day
+        header:
+          show: true
+          title: Usage last 24 hours
+        apex_config:
+          yaxis:
+            - id: first
+              forceNiceScale: true
+              decimalsInFloat: 2
+              opposite: false
+              name: Energie
+        series:
+          - entity: sensor.energy_usage_peak_hourly
+            unit: kWh
+            type: column
+            name: High tariff usage
+            color: "#EF810E"
+            group_by:
+              func: max
+            show:
+              datalabels: false
+              extremas: false
+          - entity: sensor.energy_usage_offpeak_hourly
+            unit: kWh
+            type: column
+            name: Low tariff usage
+            color: "#053752"
+            group_by:
+              func: max
+            show:
+              datalabels: false
+              extremas: false
+      - type: energy-distribution
+        link_dashboard: true
       - type: vertical-stack
         cards:
           - type: custom:mushroom-entity-card
@@ -372,4 +512,54 @@ views:
             entity: sensor.smartmeter_lastchanged
           - type: custom:mushroom-entity-card
             entity: binary_sensor.smartmeter_connectivity_status
+  - type: masonry
+    path: system
+    title: System
+    icon: mdi:desktop-classic
+    cards:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+      - type: vertical-stack
+        cards:
+          - type: conditional
+            conditions:
+              - entity: input_boolean.restart_required
+                state: 'on'
+            card:
+              type: custom:button-card
+              name: Restart Home Assistant
+              icon: mdi:restart
+              color_type: icon
+              color: red
+              tap_action:
+                action: call-service
+                confirmation:
+                  text: "Restart Home Assistant now?"
+                service: script.restart_homeassistant
+              styles:
+                card:
+                  - padding: 12px
+                name:
+                  - font-weight: 600
+                icon:
+                  - width: 32px
+                  - height: 32px
+
+          - type: custom:button-card
+            name: Git Pull
+            icon: mdi:git
+            color_type: icon
+            color: var(--primary-color)
+            tap_action:
+              action: call-service
+              service: script.git_pull
+            styles:
+              card:
+                - padding: 12px
+              name:
+                - font-weight: 600
+              icon:
+                - width: 32px
+                - height: 32px
 

@@ -1,13 +1,29 @@
-- alias: Hallway Light Motion (Blueprint)
+#- alias: Hallway Light Motion (Blueprint)
+#  id: hallway_light_motion
+#  use_blueprint:
+#    path: homeassistant/motion_light.yaml
+#    input:
+#      motion_entity: binary_sensor.hallway_motion_sensor_occupancy
+#      light_target:
+#        entity_id: light.hallway_light
+#      no_motion_wait: 30
+
+- alias: Hallway Light Motion Extended (Blueprint)
+  id: hallway_light_motion_extended
   use_blueprint:
-    path: homeassistant/motion_light.yaml
+    path: Blackshome/sensor-light.yaml
     input:
-      motion_entity: binary_sensor.hallway_motion_sensor_occupancy
-      light_target:
+      motion_trigger:
+        - binary_sensor.hallway_motion_sensor_occupancy
+      light_switch:
         entity_id: light.hallway_light
-      no_motion_wait: 30
+      time_delay: 0.5
+      include_ambient: ambient_enabled
+      ambient_light_sensor: sensor.hallway_motion_sensor_illuminance
+      ambient_light_options: ambient_light_option_enabled
 
 - alias: Sunset lights
+  id: sunset_lights
   description: Activate lights 30 min before sunset
   triggers:
     - trigger: sun
