@@ -10,10 +10,10 @@ views:
       - type: horizontal-stack
         cards:
           - type: custom:mushroom-person-card
-            entity: person.mczlik
+            entity: person.thijs
             name: Thijs
           - type: custom:mushroom-person-card
-            entity: person.mczlik
+            entity: person.sal
             name: Sal
       - square: false
         type: grid
