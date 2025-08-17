@@ -55,8 +55,6 @@ lovelace:
       type: module
     - url: /hacsfiles/lovelace-mushroom/mushroom.js
       type: module
-    - url: /hacsfiles/lovelace-mushroom-better-sliders/mushroom.js
-      type: module
     - url: /hacsfiles/mini-graph-card/mini-graph-card-bundle.js
       type: module
     - url: /hacsfiles/modern-circular-gauge/modern-circular-gauge.js
