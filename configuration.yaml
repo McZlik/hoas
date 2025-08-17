@@ -37,13 +37,13 @@ homeassistant:
 
 lovelace:
   mode: yaml
-  dashboards:
-    smartmeter-example:
-      mode: yaml
-      title: SmartMeter
-      icon: mdi:speedometer
-      show_in_sidebar: true
-      filename: smartmeter-dash.yaml
+#  dashboards:
+#    smartmeter-example:
+#      mode: yaml
+#      title: SmartMeter
+#      icon: mdi:speedometer
+#      show_in_sidebar: true
+#      filename: smartmeter-dash2.yaml
   resources:
     - url: /hacsfiles/advanced-camera-card/advanced-camera-card.js
       type: module
