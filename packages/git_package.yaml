@@ -1,0 +1,77 @@
+shell_command:
+  git_pull: 'git -C /config pull --ff-only'
+
+# Helper flag to indicate a restart is required
+input_boolean:
+  restart_required:
+    name: Restart Required
+    icon: mdi:restart-alert
+
+script:
+  git_pull:
+    alias: Git Pull Config
+    icon: mdi:git
+    sequence:
+      - service: shell_command.git_pull
+      - delay: "00:00:02"
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.restart_required
+      - service: persistent_notification.create
+        data:
+          title: "Git Pull Completed"
+          message: "Configuration updated. Restart Home Assistant to apply all changes."
+          notification_id: git_pull_notice
+    mode: single
+
+  restart_homeassistant:
+    alias: Restart Home Assistant
+    icon: mdi:restart
+    sequence:
+      - service: homeassistant.restart
+    mode: single
+
+  # Optional: run git pull and send a mobile actionable notification to restart now or later
+#  git_pull_mobile_prompt:
+#    alias: Git Pull + Mobile Prompt
+#    icon: mdi:git
+#    sequence:
+#      - service: shell_command.git_pull
+#      - delay: "00:00:02"
+#      - service: input_boolean.turn_on
+#        target:
+#          entity_id: input_boolean.restart_required
+#      - service: notify.mobile_app_<YOUR_DEVICE_NAME>
+#        data:
+#          title: "Git Pull Completed"
+#          message: "Restart Home Assistant to apply changes?"
+#          data:
+#            actions:
+#              - action: "RESTART_HA_NOW"
+#                title: "Restart now"
+#              - action: "DISMISS"
+#                title: "Later"
+#    mode: single
+
+automation:
+  # Optional: handle the mobile action to restart immediately
+  - id: restart_ha_on_mobile_action
+    alias: Restart HA on Mobile Action
+    trigger:
+      - platform: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: RESTART_HA_NOW
+    action:
+      - service: homeassistant.restart
+
+  # Optional: when Home Assistant starts, clear the flag (fresh boot implies restart was done)
+  - id: clear_restart_required_on_start
+    alias: Clear Restart Required on Start
+    trigger:
+      - platform: homeassistant
+        event: start
+    action:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.restart_required
