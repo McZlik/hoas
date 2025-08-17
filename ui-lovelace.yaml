@@ -27,7 +27,7 @@ views:
               "%" }}
             tap_action:
               action: navigate
-              navigation_path: /dashboard-dashboard/living-room
+              navigation_path: /lovelace/living-room
             badge_color: ''
             icon_color: |-
               {% if is_state('light.living_room_dimmer', 'on') %}
@@ -42,7 +42,7 @@ views:
             icon: mdi:coat-rack
             tap_action:
               action: navigate
-              navigation_path: /dashboard-dashboard/hallway
+              navigation_path: /lovelace/hallway
             badge_color: red
             icon_color: |
               {% if is_state('switch.hallway_light_switch', 'on') %}
@@ -69,7 +69,7 @@ views:
               action: more-info
             tap_action:
               action: navigate
-              navigation_path: /dashboard-dashboard/bathroom
+              navigation_path: /lovelace/bathroom
             icon_color: grey
           - type: custom:mushroom-template-card
             primary: Bedroom
@@ -82,7 +82,7 @@ views:
               action: more-info
             tap_action:
               action: navigate
-              navigation_path: /dashboard-dashboard/bedroom
+              navigation_path: /lovelace/bedroom
             icon_color: grey
           - type: custom:mushroom-template-card
             primary: Office
@@ -95,7 +95,7 @@ views:
               action: more-info
             tap_action:
               action: navigate
-              navigation_path: /dashboard-dashboard/office
+              navigation_path: /lovelace/office
             icon_color: |-
               {% if is_state('light.office_ceiling_lamp_01', 'on') %}
                 orange
