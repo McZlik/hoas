@@ -372,4 +372,51 @@ views:
             entity: sensor.smartmeter_lastchanged
           - type: custom:mushroom-entity-card
             entity: binary_sensor.smartmeter_connectivity_status
+  - type: masonry
+    path: system
+    title: System
+    icon: mdi:desktop-classic
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: conditional
+            conditions:
+              - entity: input_boolean.restart_required
+                state: 'on'
+            card:
+              type: custom:button-card
+              name: Restart Home Assistant
+              icon: mdi:restart
+              color_type: icon
+              color: red
+              tap_action:
+                action: call-service
+                confirmation:
+                  text: "Restart Home Assistant now?"
+                service: script.restart_homeassistant
+              styles:
+                card:
+                  - padding: 12px
+                name:
+                  - font-weight: 600
+                icon:
+                  - width: 32px
+                  - height: 32px
+
+          - type: custom:button-card
+            name: Git Pull
+            icon: mdi:git
+            color_type: icon
+            color: var(--primary-color)
+            tap_action:
+              action: call-service
+              service: script.git_pull
+            styles:
+              card:
+                - padding: 12px
+              name:
+                - font-weight: 600
+              icon:
+                - width: 32px
+                - height: 32px
 

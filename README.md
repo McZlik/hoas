@@ -10,16 +10,20 @@ docker run -d --name homeassistant-dev --privileged --restart=unless-stopped -e 
 
 ## Required plugins
 - [HACS](https://hacs.xyz/)
-- Apexcharts-card
-- expander-card
+- Apexcharts-card?
+- expander-card?
 - mushroom
+- Mushroom - Better Sliders
 - Catppuccin Theme
 - mini-graph-card
 - frigate
 - Advanced Camera Card
 - Modern Circular Gauge
-- 
-- card-mod?
-- button-card?
-- layout-card?
-- swipe-card?
+- button-card
+- card-mod
+- layout-card
+
+## Todo
+- [ ] Add blueprint for better motion sensor support with actual light sensors
+- [ ] Give Automations IDs
+- [ ] Give Lights IDs
