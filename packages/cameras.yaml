@@ -282,7 +282,7 @@ automation:
                 data:
                   message: "Opening Driveway live view..."
                   data:
-                    url: "http://192.168.1.200:5000/cameras/driveway"  # Adjust URL
+                    url: "http://192.168.1.200:5000/cameras/Driveway"  # Adjust URL
           - conditions:
               - condition: template
                 value_template: "{{ trigger.event.data.action == 'VIEW_BACKYARD_LIVE' }}"
@@ -291,7 +291,7 @@ automation:
                 data:
                   message: "Opening Backyard live view..."
                   data:
-                    url: "http://192.168.1.200:5000/cameras/backyard"  # Adjust URL
+                    url: "http://192.168.1.200:5000/cameras/Backyard"  # Adjust URL
         default:
           - service: system_log.write
             data:
