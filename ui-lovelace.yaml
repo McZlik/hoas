@@ -540,17 +540,17 @@ views:
           - type: custom:mushroom-entity-card
             entity: sensor.backyard_last_notification
           - type: custom:mushroom-entity-card
-            entity: sensor.daily_driveway_notifications
+            entity: counter.daily_driveway_notifications
           - type: custom:mushroom-entity-card
-            entity: sensor.daily_backyard_notifications
+            entity: counter.daily_backyard_notifications
           - type: custom:mushroom-entity-card
             entity: sensor.driveway_weekly_detections
           - type: custom:mushroom-entity-card
             entity: sensor.backyard_weekly_detections
           - type: custom:mushroom-entity-card
-            entity: sensor.driveway_notification_history
+            entity: input_text.driveway_notification_history
           - type: custom:mushroom-entity-card
-            entity: switch.backyard_notification_history
+            entity: input_text.backyard_notification_history
   - type: masonry
     path: system
     title: System
