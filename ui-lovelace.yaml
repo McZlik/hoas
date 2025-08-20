@@ -135,7 +135,7 @@ views:
             hold_action:
               action: more-info
             badge_icon: >-
-              {% if is_state('binary_sensor.binary_sensor.backyard_all_occupancy', 'on') %}
+              {% if is_state('binary_sensor.backyard_all_occupancy', 'on') %}
                 mdi:motion-sensor
               {% endif %}
         columns: 2

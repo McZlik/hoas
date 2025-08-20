@@ -12,15 +12,17 @@ docker run -d --name homeassistant-dev --privileged --restart=unless-stopped -e 
 - [HACS](https://hacs.xyz/)
 - Apexcharts-card
 - mushroom
-- Catppuccin Theme
 - mini-graph-card
 - frigate
 - Advanced Camera Card
 - Modern Circular Gauge
 - button-card
 - card-mod
-- layout-card
 - kiosk
+
+### Themes
+- Custom?
+- Catppuccin Theme
 
 ## Todo
 - [ ] Add blueprint for better motion sensor support with actual light sensors
