@@ -117,16 +117,14 @@ automation:
     description: "Send notification for Driveway detections with rate limiting"
     trigger:
       - platform: mqtt
-        topic: "frigate/Driveway"
-        payload: "new"
-        value_template: "{{ value_json.type }}"
-      - platform: mqtt
-        topic: "frigate/Driveway"
-        payload: "end"
-        value_template: "{{ value_json.type }}"
+        topic: "frigate/events"
     condition:
       - condition: template
-        value_template: "{{ 'person' in trigger.payload_json.label }}"
+        value_template: "{{ trigger.payload_json.type == 'new' }}"
+      - condition: template
+        value_template: "{{ trigger.payload_json.after.camera == 'Driveway' }}"
+      - condition: template
+        value_template: "{{ trigger.payload_json.after.label == 'person' }}"
       # Rate limit: only send notification if last one was more than 60 seconds ago
       - condition: template
         value_template: >
@@ -152,7 +150,7 @@ automation:
       # Download and store the image locally
       - service: shell_command.download_driveway_image
         data:
-          event_id: "{{ trigger.payload_json.id }}"
+          event_id: "{{ trigger.payload_json.after.id }}"
 
       # Cleanup old images (keep only last 50)
       - service: shell_command.cleanup_driveway_images
@@ -162,7 +160,7 @@ automation:
         target:
           entity_id: input_text.driveway_last_image_path
         data:
-          value: "/local/images/driveway_{{ trigger.payload_json.id }}.jpg"
+          value: "/local/images/driveway_{{ trigger.payload_json.after.id }}.jpg"
 
       # Send notification with image
       - service: notify.mobile_app_sm_s918b  # Replace with your actual device name
@@ -172,7 +170,7 @@ automation:
           data:
             # Frigate snapshot URL - adjust IP and camera name
             #            image: "http://192.168.1.200:5000/api/driveway/latest.jpg?h=300"
-            image: "http://192.168.1.200:5000/api/events/{{ trigger.payload_json.id }}/snapshot.jpg?crop=1&quality=70"
+            image: "http://192.168.1.200:5000/api/events/{{ trigger.payload_json.after.id }}/snapshot.jpg"
             # Actionable notifications
             actions:
               - action: "VIEW_DRIVEWAY_LIVE"
@@ -197,7 +195,7 @@ automation:
         data:
           value: >
             {% set current_history = states('input_text.driveway_notification_history') %}
-            {% set new_entry = now().strftime('%Y-%m-%d %H:%M:%S') + ' - Person detected (Event: ' + trigger.payload_json.id + ') - Image: /local/images/driveway_' + trigger.payload_json.id + '.jpg\n' %}
+            {% set new_entry = now().strftime('%Y-%m-%d %H:%M:%S') + ' - Person detected (Event: ' + trigger.payload_json.after.id + ') - Image: /local/images/driveway_' + trigger.payload_json.after.id + '.jpg\n' %}
             {% set updated_history = new_entry + current_history %}
             {% if updated_history|length > 2000 %}
               {{ updated_history[:2000] }}
@@ -220,16 +218,14 @@ automation:
     description: "Send notification for Backyard detections with rate limiting"
     trigger:
       - platform: mqtt
-        topic: "frigate/Backyard"
-        payload: "new"
-        value_template: "{{ value_json.type }}"
-      - platform: mqtt
-        topic: "frigate/Backyard"
-        payload: "end"
-        value_template: "{{ value_json.type }}"
+        topic: "frigate/events"
     condition:
       - condition: template
-        value_template: "{{ 'person' in trigger.payload_json.label }}"
+        value_template: "{{ trigger.payload_json.type == 'new' }}"
+      - condition: template
+        value_template: "{{ trigger.payload_json.after.camera == 'Backyard' }}"
+      - condition: template
+        value_template: "{{ trigger.payload_json.after.label == 'person' }}"
       - condition: template
         value_template: >
           {% set last_notification = states('input_datetime.last_notification_backyard') %}
@@ -252,7 +248,7 @@ automation:
       # Download and store the image locally
       - service: shell_command.download_backyard_image
         data:
-          event_id: "{{ trigger.payload_json.id }}"
+          event_id: "{{ trigger.payload_json.after.id }}"
 
       # Cleanup old images (keep only last 50)
       - service: shell_command.cleanup_backyard_images
@@ -262,7 +258,7 @@ automation:
         target:
           entity_id: input_text.backyard_last_image_path
         data:
-          value: "/local/images/backyard_{{ trigger.payload_json.id }}.jpg"
+          value: "/local/images/backyard_{{ trigger.payload_json.after.id }}.jpg"
 
       - service: notify.mobile_app_sm_s918b  # Replace with your actual device name
         data:
@@ -270,7 +266,7 @@ automation:
           message: "Person detected on Backyard"
           data:
             #            image: "http://192.168.1.200:5000/api/backyard/latest.jpg?h=300"
-            image: "http://192.168.1.200:5000/api/events/{{ trigger.payload_json.id }}/snapshot.jpg?crop=1&quality=70"
+            image: "http://192.168.1.200:5000/api/events/{{ trigger.payload_json.after.id }}/snapshot.jpg"
             actions:
               - action: "VIEW_BACKYARD_LIVE"
                 title: "View Live"
@@ -291,7 +287,7 @@ automation:
         data:
           value: >
             {% set current_history = states('input_text.backyard_notification_history') %}
-            {% set new_entry = now().strftime('%Y-%m-%d %H:%M:%S') + ' - Person detected (Event: ' + trigger.payload_json.id + ') - Image: /local/images/backyard_' + trigger.payload_json.id + '.jpg\n' %}
+            {% set new_entry = now().strftime('%Y-%m-%d %H:%M:%S') + ' - Person detected (Event: ' + trigger.payload_json.after.id + ') - Image: /local/images/backyard_' + trigger.payload_json.after.id + '.jpg\n' %}
             {% set updated_history = new_entry + current_history %}
             {% if updated_history|length > 2000 %}
               {{ updated_history[:2000] }}
@@ -392,8 +388,8 @@ automation:
 
 # Shell commands for downloading images and cleanup
 shell_command:
-  download_driveway_image: 'mkdir -p /config/www/images && wget -O /config/www/images/driveway_{{ event_id }}.jpg "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"'
-  download_backyard_image: 'mkdir -p /config/www/images && wget -O /config/www/images/backyard_{{ event_id }}.jpg "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"'
+  download_driveway_image: 'mkdir -p /config/www/images && wget -O /config/www/images/driveway_{{ event_id }}.jpg "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg"'
+  download_backyard_image: 'mkdir -p /config/www/images && wget -O /config/www/images/backyard_{{ event_id }}.jpg "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg"'
   cleanup_driveway_images: 'cd /config/www/images && ls -t driveway_*.jpg 2>/dev/null | tail -n +51 | xargs -r rm'
   cleanup_backyard_images: 'cd /config/www/images && ls -t backyard_*.jpg 2>/dev/null | tail -n +51 | xargs -r rm'
   setup_images_directory: 'mkdir -p /config/www/images'
