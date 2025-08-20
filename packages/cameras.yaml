@@ -86,9 +86,17 @@ automation:
     id: frigate_driveway_notification
     description: "Send notification for Driveway detections with rate limiting"
     trigger:
-      - platform: state
-        entity_id: binary_sensor.driveway_person_occupancy  # Adjust to your actual entity
-        to: 'on'
+      - platform: mqtt
+        topic: "frigate/Driveway"
+        payload: "new"
+        value_template: "{{ value_json.type }}"
+      - platform: mqtt
+        topic: "frigate/Driveway"
+        payload: "end"
+        value_template: "{{ value_json.type }}"
+    condition:
+      - condition: template
+        value_template: "{{ 'person' in trigger.payload_json.label }}"
     condition:
       # Rate limit: only send notification if last one was more than 60 seconds ago
       - condition: template
@@ -119,7 +127,8 @@ automation:
           message: "Person detected on Driveway"
           data:
             # Frigate snapshot URL - adjust IP and camera name
-            image: "http://192.168.1.200:5000/api/driveway/latest.jpg?h=300"
+#            image: "http://192.168.1.200:5000/api/driveway/latest.jpg?h=300"
+            image: "http://192.168.1.200:5000/api/events/{{ trigger.payload_json.id }}/snapshot.jpg?crop=1&quality=70"
             # Actionable notifications
             actions:
               - action: "VIEW_DRIVEWAY_LIVE"
@@ -166,9 +175,17 @@ automation:
     id: frigate_backyard_notification
     description: "Send notification for Backyard detections with rate limiting"
     trigger:
-      - platform: state
-        entity_id: binary_sensor.backyard_person_occupancy  # Adjust to your actual entity
-        to: 'on'
+      - platform: mqtt
+        topic: "frigate/Backyard"
+        payload: "new"
+        value_template: "{{ value_json.type }}"
+      - platform: mqtt
+        topic: "frigate/Backyard"
+        payload: "end"
+        value_template: "{{ value_json.type }}"
+    condition:
+      - condition: template
+        value_template: "{{ 'person' in trigger.payload_json.label }}"
     condition:
       - condition: template
         value_template: >
@@ -194,7 +211,8 @@ automation:
           title: "🏠 Security Alert"
           message: "Person detected on Backyard"
           data:
-            image: "http://192.168.1.200:5000/api/backyard/latest.jpg?h=300"
+#            image: "http://192.168.1.200:5000/api/backyard/latest.jpg?h=300"
+            image: "http://192.168.1.200:5000/api/events/{{ trigger.payload_json.id }}/snapshot.jpg?crop=1&quality=70"
             actions:
               - action: "VIEW_BACKYARD_LIVE"
                 title: "View Live"
