@@ -14,16 +14,6 @@ input_datetime:
 
 # Input text helpers to store notification history and image paths
 input_text:
-  driveway_notification_history:
-    name: "Driveway Notification History"
-    max: 2048
-    initial: ""
-
-  backyard_notification_history:
-    name: "Backyard Notification History"
-    max: 2048
-    initial: ""
-
   driveway_last_image_path:
     name: "Driveway Last Image Path"
     max: 255
@@ -170,7 +160,7 @@ automation:
           data:
             # Frigate snapshot URL - adjust IP and camera name
             #            image: "http://192.168.1.200:5000/api/driveway/latest.jpg?h=300"
-            image: "http://192.168.1.200:5000/api/events/{{ trigger.payload_json.after.id }}/snapshot.jpg"
+            image: "http://192.168.1.200:5000/api/events/{{ trigger.payload_json.after.id }}/snapshot.jpg?crop=1&quality=70"
             # Actionable notifications
             actions:
               - action: "VIEW_DRIVEWAY_LIVE"
@@ -188,22 +178,7 @@ automation:
             # Make notification persistent until dismissed
             persistent: true
 
-      # Update history log
-      - service: input_text.set_value
-        target:
-          entity_id: input_text.driveway_notification_history
-        data:
-          value: >
-            {% set current_history = states('input_text.driveway_notification_history') %}
-            {% set new_entry = now().strftime('%Y-%m-%d %H:%M:%S') + ' - Person detected (Event: ' + trigger.payload_json.after.id + ') - Image: /local/images/driveway_' + trigger.payload_json.after.id + '.jpg\n' %}
-            {% set updated_history = new_entry + current_history %}
-            {% if updated_history|length > 2000 %}
-              {{ updated_history[:2000] }}
-            {% else %}
-              {{ updated_history }}
-            {% endif %}
-
-      # Create persistent notification in HA for history
+      # Create persistent notification in HA
       - service: notify.persistent_notification
         data:
           title: "Security Event Logged"
@@ -266,7 +241,7 @@ automation:
           message: "Person detected on Backyard"
           data:
             #            image: "http://192.168.1.200:5000/api/backyard/latest.jpg?h=300"
-            image: "http://192.168.1.200:5000/api/events/{{ trigger.payload_json.after.id }}/snapshot.jpg"
+            image: "http://192.168.1.200:5000/api/events/{{ trigger.payload_json.after.id }}/snapshot.jpg?crop=1&quality=70"
             actions:
               - action: "VIEW_BACKYARD_LIVE"
                 title: "View Live"
@@ -280,20 +255,6 @@ automation:
             group: "security-alerts"
             tag: "backyard-detection"
             persistent: true
-
-      - service: input_text.set_value
-        target:
-          entity_id: input_text.backyard_notification_history
-        data:
-          value: >
-            {% set current_history = states('input_text.backyard_notification_history') %}
-            {% set new_entry = now().strftime('%Y-%m-%d %H:%M:%S') + ' - Person detected (Event: ' + trigger.payload_json.after.id + ') - Image: /local/images/backyard_' + trigger.payload_json.after.id + '.jpg\n' %}
-            {% set updated_history = new_entry + current_history %}
-            {% if updated_history|length > 2000 %}
-              {{ updated_history[:2000] }}
-            {% else %}
-              {{ updated_history }}
-            {% endif %}
 
       - service: notify.persistent_notification
         data:
@@ -388,8 +349,8 @@ automation:
 
 # Shell commands for downloading images and cleanup
 shell_command:
-  download_driveway_image: 'mkdir -p /config/www/images && wget -O /config/www/images/driveway_{{ event_id }}.jpg "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg"'
-  download_backyard_image: 'mkdir -p /config/www/images && wget -O /config/www/images/backyard_{{ event_id }}.jpg "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg"'
+  download_driveway_image: 'mkdir -p /config/www/images && wget -O /config/www/images/driveway_{{ event_id }}.jpg "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"'
+  download_backyard_image: 'mkdir -p /config/www/images && wget -O /config/www/images/backyard_{{ event_id }}.jpg "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"'
   cleanup_driveway_images: 'cd /config/www/images && ls -t driveway_*.jpg 2>/dev/null | tail -n +51 | xargs -r rm'
   cleanup_backyard_images: 'cd /config/www/images && ls -t backyard_*.jpg 2>/dev/null | tail -n +51 | xargs -r rm'
   setup_images_directory: 'mkdir -p /config/www/images'
@@ -405,8 +366,6 @@ shell_command:
 #   - counter.daily_backyard_notifications
 #   - sensor.driveway_weekly_detections
 #   - sensor.backyard_weekly_detections
-#   - input_text.driveway_notification_history
-#   - input_text.backyard_notification_history
 #   - sensor.driveway_last_image
 #   - sensor.backyard_last_image
 # show_header_toggle: false
