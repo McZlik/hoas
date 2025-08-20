@@ -122,7 +122,7 @@ automation:
           {% if last_notification == 'unknown' or last_notification == '' %}
             true
           {% else %}
-            {{ (now() - as_timestamp(last_notification) | as_datetime) > timedelta(seconds=60) }}
+            {{ (now().timestamp() - as_timestamp(last_notification)) > 60 }}
           {% endif %}
     action:
       # Store the parsed payload for reuse
@@ -211,7 +211,7 @@ automation:
           {% if last_notification == 'unknown' or last_notification == '' %}
             true
           {% else %}
-            {{ (now() - as_timestamp(last_notification) | as_datetime) > timedelta(seconds=60) }}
+            {{ (now().timestamp() - as_timestamp(last_notification)) > 60 }}
           {% endif %}
     action:
       # Store the parsed payload for reuse
