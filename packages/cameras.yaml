@@ -110,11 +110,11 @@ automation:
         topic: "frigate/events"
     condition:
       - condition: template
-        value_template: "{{ trigger.payload_json.type == 'new' }}"
+        value_template: "{{ (trigger.payload | from_json).type == 'new' }}"
       - condition: template
-        value_template: "{{ trigger.payload_json.after.camera == 'Driveway' }}"
+        value_template: "{{ (trigger.payload | from_json).after.camera == 'Driveway' }}"
       - condition: template
-        value_template: "{{ trigger.payload_json.after.label == 'person' }}"
+        value_template: "{{ (trigger.payload | from_json).after.label == 'person' }}"
       # Rate limit: only send notification if last one was more than 60 seconds ago
       - condition: template
         value_template: >
@@ -125,6 +125,11 @@ automation:
             {{ (now() - as_timestamp(last_notification) | as_datetime) > timedelta(seconds=60) }}
           {% endif %}
     action:
+      # Store the parsed payload for reuse
+      - variables:
+          payload: "{{ trigger.payload | from_json }}"
+          event_id: "{{ (trigger.payload | from_json).after.id }}"
+
       # Update last notification time
       - service: input_datetime.set_datetime
         target:
@@ -140,7 +145,7 @@ automation:
       # Download and store the image locally
       - service: shell_command.download_driveway_image
         data:
-          event_id: "{{ trigger.payload_json.after.id }}"
+          event_id: "{{ event_id }}"
 
       # Cleanup old images (keep only last 50)
       - service: shell_command.cleanup_driveway_images
@@ -150,7 +155,7 @@ automation:
         target:
           entity_id: input_text.driveway_last_image_path
         data:
-          value: "/local/images/driveway_{{ trigger.payload_json.after.id }}.jpg"
+          value: "/local/images/driveway_{{ event_id }}.jpg"
 
       # Send notification with image
       - service: notify.mobile_app_sm_s918b  # Replace with your actual device name
@@ -160,7 +165,7 @@ automation:
           data:
             # Frigate snapshot URL - adjust IP and camera name
             #            image: "http://192.168.1.200:5000/api/driveway/latest.jpg?h=300"
-            image: "http://192.168.1.200:5000/api/events/{{ trigger.payload_json.after.id }}/snapshot.jpg?crop=1&quality=70"
+            image: "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"
             # Actionable notifications
             actions:
               - action: "VIEW_DRIVEWAY_LIVE"
@@ -195,11 +200,11 @@ automation:
         topic: "frigate/events"
     condition:
       - condition: template
-        value_template: "{{ trigger.payload_json.type == 'new' }}"
+        value_template: "{{ (trigger.payload | from_json).type == 'new' }}"
       - condition: template
-        value_template: "{{ trigger.payload_json.after.camera == 'Backyard' }}"
+        value_template: "{{ (trigger.payload | from_json).after.camera == 'Backyard' }}"
       - condition: template
-        value_template: "{{ trigger.payload_json.after.label == 'person' }}"
+        value_template: "{{ (trigger.payload | from_json).after.label == 'person' }}"
       - condition: template
         value_template: >
           {% set last_notification = states('input_datetime.last_notification_backyard') %}
@@ -209,6 +214,11 @@ automation:
             {{ (now() - as_timestamp(last_notification) | as_datetime) > timedelta(seconds=60) }}
           {% endif %}
     action:
+      # Store the parsed payload for reuse
+      - variables:
+          payload: "{{ trigger.payload | from_json }}"
+          event_id: "{{ (trigger.payload | from_json).after.id }}"
+
       - service: input_datetime.set_datetime
         target:
           entity_id: input_datetime.last_notification_backyard
@@ -222,7 +232,7 @@ automation:
       # Download and store the image locally
       - service: shell_command.download_backyard_image
         data:
-          event_id: "{{ trigger.payload_json.after.id }}"
+          event_id: "{{ event_id }}"
 
       # Cleanup old images (keep only last 50)
       - service: shell_command.cleanup_backyard_images
@@ -232,7 +242,7 @@ automation:
         target:
           entity_id: input_text.backyard_last_image_path
         data:
-          value: "/local/images/backyard_{{ trigger.payload_json.after.id }}.jpg"
+          value: "/local/images/backyard_{{ event_id }}.jpg"
 
       - service: notify.mobile_app_sm_s918b  # Replace with your actual device name
         data:
@@ -240,7 +250,7 @@ automation:
           message: "Person detected on Backyard"
           data:
             #            image: "http://192.168.1.200:5000/api/backyard/latest.jpg?h=300"
-            image: "http://192.168.1.200:5000/api/events/{{ trigger.payload_json.after.id }}/snapshot.jpg?crop=1&quality=70"
+            image: "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"
             actions:
               - action: "VIEW_BACKYARD_LIVE"
                 title: "View Live"
