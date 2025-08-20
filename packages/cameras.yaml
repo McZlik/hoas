@@ -185,7 +185,6 @@ automation:
           message: >
             Driveway detection at {{ now().strftime('%H:%M:%S') }}
             Daily count: {{ states('counter.daily_driveway_notifications') }}
-          notification_id: "security_driveway_{{ now().strftime('%Y%m%d_%H%M%S') }}"
 
   # Backyard Detection Notification (duplicate structure)
   - alias: "Frigate Backyard Detection Notification"
@@ -262,7 +261,6 @@ automation:
           message: >
             Backyard detection at {{ now().strftime('%H:%M:%S') }}
             Daily count: {{ states('counter.daily_backyard_notifications') }}
-          notification_id: "security_backyard_{{ now().strftime('%Y%m%d_%H%M%S') }}"
 
   # Handle actionable notification responses
   - alias: "Handle Security Notification Actions"
