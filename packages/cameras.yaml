@@ -347,8 +347,8 @@ automation:
 
 # Shell commands for downloading images and cleanup
 shell_command:
-  download_driveway_image: 'mkdir -p /config/www/images && wget -O /config/www/images/driveway_{{ event_id }}.jpg "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"'
-  download_backyard_image: 'mkdir -p /config/www/images && wget -O /config/www/images/backyard_{{ event_id }}.jpg "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"'
+  download_driveway_image: 'mkdir -p /config/www/images && wget -O "/config/www/images/driveway_{{ event_id }}.jpg" "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"'
+  download_backyard_image: 'mkdir -p /config/www/images && wget -O "/config/www/images/backyard_{{ event_id }}.jpg" "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"'
   cleanup_driveway_images: 'cd /config/www/images && ls -t driveway_*.jpg 2>/dev/null | tail -n +51 | xargs -r rm'
   cleanup_backyard_images: 'cd /config/www/images && ls -t backyard_*.jpg 2>/dev/null | tail -n +51 | xargs -r rm'
   setup_images_directory: 'mkdir -p /config/www/images'
