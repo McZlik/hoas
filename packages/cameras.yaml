@@ -1,0 +1,297 @@
+# Cameras Package
+
+# Input helpers for rate limiting
+input_datetime:
+  last_notification_driveway:
+    name: "Last Notification Driveway"
+    has_date: true
+    has_time: true
+
+  last_notification_backyard:
+    name: "Last Notification Backyard"
+    has_date: true
+    has_time: true
+
+# Input text helpers to store notification history
+input_text:
+  driveway_notification_history:
+    name: "Driveway Notification History"
+    max: 2048
+    initial: ""
+
+  backyard_notification_history:
+    name: "Backyard Notification History"
+    max: 2048
+    initial: ""
+
+# Counter for tracking daily notifications
+counter:
+  daily_driveway_notifications:
+    name: "Daily Driveway Notifications"
+    icon: mdi:counter
+    initial: 0
+    step: 1
+
+  daily_backyard_notifications:
+    name: "Daily Backyard Notifications"
+    icon: mdi:counter
+    initial: 0
+    step: 1
+
+# History tracking sensors
+sensor:
+  - platform: history_stats
+    name: "Driveway Weekly Detections"
+    entity_id: binary_sensor.driveway_person_occupancy
+    state: 'on'
+    type: count
+    start: '{{ (now() - timedelta(days=7)).replace(hour=0, minute=0, second=0) }}'
+    end: '{{ now() }}'
+
+  - platform: history_stats
+    name: "Backyard Weekly Detections"
+    entity_id: binary_sensor.backyard_person_occupancy
+    state: 'on'
+    type: count
+    start: '{{ (now() - timedelta(days=7)).replace(hour=0, minute=0, second=0) }}'
+    end: '{{ now() }}'
+
+  # Template sensors for last notification info
+  - platform: template
+    sensors:
+      driveway_last_notification:
+        friendly_name: "Driveway Last Notification"
+        value_template: >
+          {% if states('input_datetime.last_notification_driveway') %}
+            {{ as_timestamp(states('input_datetime.last_notification_driveway')) | timestamp_custom('%Y-%m-%d %H:%M:%S') }}
+          {% else %}
+            Never
+          {% endif %}
+        icon_template: mdi:bell-outline
+
+      backyard_last_notification:
+        friendly_name: "Backyard Last Notification"
+        value_template: >
+          {% if states('input_datetime.last_notification_backyard') %}
+            {{ as_timestamp(states('input_datetime.last_notification_backyard')) | timestamp_custom('%Y-%m-%d %H:%M:%S') }}
+          {% else %}
+            Never
+          {% endif %}
+        icon_template: mdi:bell-outline
+
+# Automations for notifications
+automation:
+  # Driveway Detection Notification
+  - alias: "Frigate Driveway Detection Notification"
+    id: frigate_driveway_notification
+    description: "Send notification for Driveway detections with rate limiting"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.driveway_person_occupancy  # Adjust to your actual entity
+        to: 'on'
+    condition:
+      # Rate limit: only send notification if last one was more than 60 seconds ago
+      - condition: template
+        value_template: >
+          {% set last_notification = states('input_datetime.last_notification_driveway') %}
+          {% if last_notification == 'unknown' or last_notification == '' %}
+            true
+          {% else %}
+            {{ (now() - as_timestamp(last_notification) | as_datetime) > timedelta(seconds=60) }}
+          {% endif %}
+    action:
+      # Update last notification time
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.last_notification_driveway
+        data:
+          datetime: "{{ now() }}"
+
+      # Increment daily counter
+      - service: counter.increment
+        target:
+          entity_id: counter.daily_driveway_notifications
+
+      # Send notification with image
+      - service: notify.mobile_app_sm_s918b  # Replace with your actual device name
+        data:
+          title: "🏠 Security Alert"
+          message: "Person detected on Driveway"
+          data:
+            # Frigate snapshot URL - adjust IP and camera name
+            image: "http://192.168.1.200:5000/api/driveway/latest.jpg?h=300"
+            # Actionable notifications
+            actions:
+              - action: "VIEW_DRIVEWAY_LIVE"
+                title: "View Live"
+                icon: sfsymbols:video
+              - action: "DISMISS_DRIVEWAY"
+                title: "Dismiss"
+                icon: sfsymbols:xmark
+            # Additional notification settings
+            push:
+              sound: default
+              badge: 0
+            group: "security-alerts"
+            tag: "driveway-detection"
+            # Make notification persistent until dismissed
+            persistent: true
+
+      # Update history log
+      - service: input_text.set_value
+        target:
+          entity_id: input_text.driveway_notification_history
+        data:
+          value: >
+            {% set current_history = states('input_text.driveway_notification_history') %}
+            {% set new_entry = now().strftime('%Y-%m-%d %H:%M:%S') + ' - Person detected\n' %}
+            {% set updated_history = new_entry + current_history %}
+            {% if updated_history|length > 2000 %}
+              {{ updated_history[:2000] }}
+            {% else %}
+              {{ updated_history }}
+            {% endif %}
+
+      # Create persistent notification in HA for history
+      - service: notify.persistent_notification
+        data:
+          title: "Security Event Logged"
+          message: >
+            Driveway detection at {{ now().strftime('%H:%M:%S') }}
+            Daily count: {{ states('counter.daily_driveway_notifications') }}
+          notification_id: "security_driveway_{{ now().strftime('%Y%m%d_%H%M%S') }}"
+
+  # Backyard Detection Notification (duplicate structure)
+  - alias: "Frigate Backyard Detection Notification"
+    id: frigate_backyard_notification
+    description: "Send notification for Backyard detections with rate limiting"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.backyard_person_occupancy  # Adjust to your actual entity
+        to: 'on'
+    condition:
+      - condition: template
+        value_template: >
+          {% set last_notification = states('input_datetime.last_notification_backyard') %}
+          {% if last_notification == 'unknown' or last_notification == '' %}
+            true
+          {% else %}
+            {{ (now() - as_timestamp(last_notification) | as_datetime) > timedelta(seconds=60) }}
+          {% endif %}
+    action:
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.last_notification_backyard
+        data:
+          datetime: "{{ now() }}"
+
+      - service: counter.increment
+        target:
+          entity_id: counter.daily_backyard_notifications
+
+      - service: notify.mobile_app_sm_s918b  # Replace with your actual device name
+        data:
+          title: "🏠 Security Alert"
+          message: "Person detected on Backyard"
+          data:
+            image: "http://192.168.1.200:5000/api/backyard/latest.jpg?h=300"
+            actions:
+              - action: "VIEW_BACKYARD_LIVE"
+                title: "View Live"
+                icon: sfsymbols:video
+              - action: "DISMISS_BACKYARD"
+                title: "Dismiss"
+                icon: sfsymbols:xmark
+            push:
+              sound: default
+              badge: 0
+            group: "security-alerts"
+            tag: "backyard-detection"
+            persistent: true
+
+      - service: input_text.set_value
+        target:
+          entity_id: input_text.backyard_notification_history
+        data:
+          value: >
+            {% set current_history = states('input_text.backyard_notification_history') %}
+            {% set new_entry = now().strftime('%Y-%m-%d %H:%M:%S') + ' - Person detected\n' %}
+            {% set updated_history = new_entry + current_history %}
+            {% if updated_history|length > 2000 %}
+              {{ updated_history[:2000] }}
+            {% else %}
+              {{ updated_history }}
+            {% endif %}
+
+      - service: notify.persistent_notification
+        data:
+          title: "Security Event Logged"
+          message: >
+            Backyard detection at {{ now().strftime('%H:%M:%S') }}
+            Daily count: {{ states('counter.daily_backyard_notifications') }}
+          notification_id: "security_backyard_{{ now().strftime('%Y%m%d_%H%M%S') }}"
+
+  # Handle actionable notification responses
+  - alias: "Handle Security Notification Actions"
+    id: handle_security_notification_actions
+    description: "Handle responses to actionable security notifications"
+    trigger:
+      - platform: event
+        event_type: mobile_app_notification_action
+    condition:
+      - condition: template
+        value_template: "{{ trigger.event.data.action in ['VIEW_DRIVEWAY_LIVE', 'VIEW_BACKYARD_LIVE', 'DISMISS_DRIVEWAY', 'DISMISS_BACKYARD'] }}"
+    action:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ trigger.event.data.action == 'VIEW_DRIVEWAY_LIVE' }}"
+            sequence:
+              - service: notify.mobile_app_sm_s918b
+                data:
+                  message: "Opening Driveway live view..."
+                  data:
+                    url: "http://192.168.1.200:5000/cameras/driveway"  # Adjust URL
+          - conditions:
+              - condition: template
+                value_template: "{{ trigger.event.data.action == 'VIEW_BACKYARD_LIVE' }}"
+            sequence:
+              - service: notify.mobile_app_sm_s918b
+                data:
+                  message: "Opening Backyard live view..."
+                  data:
+                    url: "http://192.168.1.200:5000/cameras/backyard"  # Adjust URL
+        default:
+          - service: system_log.write
+            data:
+              message: "Security notification dismissed via {{ trigger.event.data.action }}"
+              level: info
+
+  # Reset daily counters at midnight
+  - alias: "Reset Daily Security Counters"
+    id: reset_daily_security_counters
+    description: "Reset daily notification counters at midnight"
+    trigger:
+      - platform: time
+        at: "00:00:00"
+    action:
+      - service: counter.reset
+        target:
+          entity_id:
+            - counter.daily_driveway_notifications
+            - counter.daily_backyard_notifications
+
+# Lovelace card configuration (optional - for dashboard)
+# Add this to your dashboard YAML or create via UI:
+# type: entities
+# title: Security Notifications Status
+# entities:
+#   - sensor.driveway_last_notification
+#   - sensor.backyard_last_notification
+#   - counter.daily_driveway_notifications
+#   - counter.daily_backyard_notifications
+#   - sensor.driveway_weekly_detections
+#   - sensor.backyard_weekly_detections
+#   - input_text.driveway_notification_history
+#   - input_text.backyard_notification_history
+# show_header_toggle: false

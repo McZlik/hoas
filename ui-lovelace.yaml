@@ -22,6 +22,11 @@ views:
           - type: action
             tap_action:
               action: navigate
+              navigation_path: /lovelace/cameras
+            icon: mdi:cctv
+          - type: action
+            tap_action:
+              action: navigate
               navigation_path: /lovelace/system
             icon: mdi:cog
 
@@ -512,6 +517,40 @@ views:
             entity: sensor.smartmeter_lastchanged
           - type: custom:mushroom-entity-card
             entity: binary_sensor.smartmeter_connectivity_status
+  - type: masonry
+    path: cameras
+    title: Cameras
+    icon: mdi:cctv
+    cards:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: back
+      - type: vertical-stack
+        cards:
+          - type: custom:advanced-camera-card
+            cameras:
+              - camera_entity: camera.living
+          - type: custom:advanced-camera-card
+            cameras:
+              - camera_entity: camera.backyard
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: sensor.driveway_last_notification
+          - type: custom:mushroom-entity-card
+            entity: sensor.backyard_last_notification
+          - type: custom:mushroom-entity-card
+            entity: sensor.daily_driveway_notifications
+          - type: custom:mushroom-entity-card
+            entity: sensor.daily_backyard_notifications
+          - type: custom:mushroom-entity-card
+            entity: sensor.driveway_weekly_detections
+          - type: custom:mushroom-entity-card
+            entity: sensor.backyard_weekly_detections
+          - type: custom:mushroom-entity-card
+            entity: sensor.driveway_notification_history
+          - type: custom:mushroom-entity-card
+            entity: switch.backyard_notification_history
   - type: masonry
     path: system
     title: System
