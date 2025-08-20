@@ -109,8 +109,8 @@ automation:
       - platform: mqtt
         topic: "frigate/events"
     condition:
-#      - condition: template
-#        value_template: "{{ (trigger.payload | from_json).type == 'new' }}"
+      - condition: template
+        value_template: "{{ (trigger.payload | from_json).type == 'new' }}"
       - condition: template
         value_template: "{{ (trigger.payload | from_json).after.camera == 'Driveway' }}"
       - condition: template
@@ -199,8 +199,8 @@ automation:
       - platform: mqtt
         topic: "frigate/events"
     condition:
-#      - condition: template
-#        value_template: "{{ (trigger.payload | from_json).type == 'new' }}"
+      - condition: template
+        value_template: "{{ (trigger.payload | from_json).type == 'new' }}"
       - condition: template
         value_template: "{{ (trigger.payload | from_json).after.camera == 'Backyard' }}"
       - condition: template
