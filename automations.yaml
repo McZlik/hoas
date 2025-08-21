@@ -1,4 +1,4 @@
-- alias: Hallway Light Motion (Blueprint)
+- alias: Hallway Light Motion - We don't like this one
   id: hallway_light_motion
   use_blueprint:
     path: homeassistant/motion_light.yaml
