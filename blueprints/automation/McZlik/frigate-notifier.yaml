@@ -824,77 +824,6 @@ blueprint:
           selector:
             action: {}
           default: []
-    tv_notifications:
-      name: |
-        # TV Notifications
-      description: These are TV Notification Options
-      icon: mdi:television
-      collapsed: true
-      input:
-        tv:
-          name: TV Notification (Optional)
-          description: |
-            Set to true if you are notifying an Android/Fire TV
-            Can also be used to prioritise snapshots on the TV over Android mobile apps when notifying a mixed device group.
-            Base URL must be set
-
-            The below settings are for TV notifications only
-          default: false
-          selector:
-            boolean:
-        tv_position:
-          name: TV Notification Position (Optional)
-          description: Set the position of the notification on your TV
-          default: center
-          selector:
-            select:
-              mode: dropdown
-              options:
-                - bottom-right
-                - bottom-left
-                - top-right
-                - top-left
-                - center
-        tv_size:
-          name: TV Notification Size (Optional)
-          description: Set the size of the notification on your TV.
-          default: large
-          selector:
-            select:
-              mode: dropdown
-              options:
-                - small
-                - medium
-                - large
-                - max
-        tv_duration:
-          name: TV Notification Duration (Optional)
-          description: The duration (in seconds) that the notification will display on your TV.
-          default: 10
-          selector:
-            number:
-              max: 300
-              min: 0
-              unit_of_measurement: seconds
-        tv_transparency:
-          name: TV notification Transparency (Optional)
-          description: Set the transparency of the notification on your TV.
-          default: 0%
-          selector:
-            select:
-              mode: dropdown
-              options:
-                - 0%
-                - 25%
-                - 50%
-                - 75%
-                - 100%
-        tv_interrupt:
-          name: TV Notification Interrupt (Optional)
-          description: "If set to true the notification is interactive and can be dismissed or selected to display more details. Depending on the running app (e.g., Netflix), this may stop playback."
-          default: false
-          selector:
-            boolean:
     debug:
       name: |
         # DEBUG
@@ -983,12 +912,6 @@ variables:
   input_volume: !input volume
   volume: "{{ (1 * input_volume|int(100))/100 }}"
   sticky: !input sticky
-  tv: !input tv
-  tv_position: !input tv_position
-  tv_size: !input tv_size
-  tv_duration: !input tv_duration
-  tv_transparency: !input tv_transparency
-  tv_interrupt: !input tv_interrupt
   debug: !input debug
   redacted: !input redacted
   master_condition: !input master_condition
@@ -1179,13 +1102,7 @@ actions:
                             Action Button 1 Text/URL/Icon: {{iif(button_1, button_1, 'unset')}} ({{url_1 if not redacted or not base_url else url_1 |replace(base_url, 'REDACTED')}}) {{icon_1}}, 
                             Action Button 2 Text/URL/Icon: {{iif(button_2, button_2, 'unset')}} ({{url_2 if not redacted or not base_url else url_2 |replace(base_url, 'REDACTED')}}) {{icon_2}}, 
                             Action Button 3 Text/URL/Icon: {{iif(button_3, button_3, 'unset')}} ({{url_3 if not redacted or not base_url else url_3 |replace(base_url, 'REDACTED')}}) {{icon_3}}, 
-                            Icon: {{icon}}
-                            TV: {{ tv }}, 
-                              Position: {{tv_position}}, 
-                              Size: {{tv_size}}, 
-                              Duration: {{tv_duration}}, 
-                              Transparency: {{tv_transparency}}, 
-                              TV Interrupt: {{tv_interrupt}}, 
+                            Icon: {{icon}} 
                             Telegram: {{telegram}},
                             Telegram_chat_id: {{telegram_chat_id}},
                           Filters: 
@@ -1302,62 +1219,6 @@ actions:
                                       uri: "{{url_3}}"
                                       icon: "{{icon_3}}"
                                       destructive: true
-                          - conditions: "{{ tv }}"
-                            sequence:
-                              - action: "notify.{{ notify_group_target }}"
-                                data:
-                                  title: "{{title}}"
-                                  message: "{{message}}"
-                                  data:
-                                    tag: "{{ id }}"
-                                    group: "{{ group }}"
-                                    color: "{{color}}"
-                                    # Android Specific
-                                    subject: "{{subtitle}}"
-                                    clickAction: "{{tap_action}}"
-                                    ttl: 0
-                                    priority: high
-                                    notification_icon: "{{icon}}"
-                                    sticky: "{{sticky}}"
-                                    channel: "{{'alarm_stream' if critical else channel}}"
-                                    car_ui: "{{android_auto}}"
-                                    # Android/Fire TV
-                                    image:
-                                      #only send still images to TV
-                                      url: "{{attachment | replace('review_preview.gif','snapshot.jpg') | replace('event_preview.gif','snapshot.jpg')}}"
-                                    fontsize: "{{tv_size}}"
-                                    position: "{{tv_position}}"
-                                    duration: "{{tv_duration}}"
-                                    transparency: "{{tv_transparency}}"
-                                    interrupt: "{{tv_interrupt}}"
-                                    timeout: 30
-                                    # iOS Specific
-                                    subtitle: "{{subtitle}}"
-                                    url: "{{tap_action}}"
-                                    attachment:
-                                      url: "{{video if video else attachment }}"
-                                      content-type: "{{ 'application/vnd.apple.mpegurl' if 'm3u8' in video else 'mp4' if 'mp4' in video else 'jpeg' if 'jpg' in attachment else 'gif' }}"
-                                    push:
-                                      sound:
-                                        name: "{{sound}}"
-                                        volume: "{{ iif(sound == 'none', 0, volume) }}"
-                                        critical: "{{ iif(critical, 1, 0) }}"
-                                    entity_id: "{{ios_live_view}}"
-                                    # Actions
-                                    actions:
-                                      - action: URI
-                                        title: "{{button_1}}"
-                                        uri: "{{url_1}}"
-                                        icon: "{{icon_1}}"
-                                      - action: URI
-                                        title: "{{button_2}}"
-                                        uri: "{{url_2}}"
-                                        icon: "{{icon_2}}"
-                                      - action: "{{ 'URI' if '/' in url_3 else url_3 }}"
-                                        title: "{{button_3}}"
-                                        uri: "{{url_3}}"
-                                        icon: "{{icon_3}}"
-                                        destructive: true
                         default:
                           - action: "notify.{{ notify_group_target }}"
                             data:
@@ -1378,13 +1239,6 @@ actions:
                                 sticky: "{{sticky}}"
                                 channel: "{{'alarm_stream' if critical else channel}}"
                                 car_ui: "{{android_auto}}"
-                                # Android/Fire TV
-                                subtitle: "{{subtitle}}"
-                                fontsize: "{{tv_size}}"
-                                position: "{{tv_position}}"
-                                duration: "{{tv_duration}}"
-                                transparency: "{{tv_transparency}}"
-                                interrupt: "{{tv_interrupt}}"
                                 # iOS Specific
                                 url: "{{tap_action}}"
                                 attachment:
@@ -1772,63 +1626,6 @@ actions:
                                             uri: "{{url_3}}"
                                             icon: "{{icon_3}}"
                                             destructive: true
-                                - conditions: "{{ tv }}"
-                                  sequence:
-                                    - action: "notify.{{ notify_group_target }}"
-                                      data:
-                                        title: "{{title}}"
-                                        message: "{{message}}"
-                                        data:
-                                          tag: "{{ id }}"
-                                          group: "{{ group }}"
-                                          color: "{{color}}"
-                                          # Android Specific
-                                          subject: "{{subtitle}}"
-                                          clickAction: "{{tap_action}}"
-                                          ttl: 0
-                                          priority: high
-                                          alert_once: "{{ alert_once }}"
-                                          notification_icon: "{{icon}}"
-                                          sticky: "{{sticky}}"
-                                          channel: "{{'alarm_stream' if critical else channel}}"
-                                          car_ui: "{{android_auto}}"
-                                          # Android/Fire TV
-                                          image:
-                                            url: "{{base_url}}/api/frigate{{client_id}}/notifications/{{id}}/snapshot.jpg"
-                                          video: "{{video}}"
-                                          fontsize: "{{tv_size}}"
-                                          position: "{{tv_position}}"
-                                          duration: "{{tv_duration}}"
-                                          transparency: "{{tv_transparency}}"
-                                          interrupt: "{{tv_interrupt}}"
-                                          timeout: 30
-                                          # iOS Specific
-                                          subtitle: "{{subtitle}}"
-                                          url: "{{tap_action}}"
-                                          attachment:
-                                            url: "{{video if video else attachment }}"
-                                            content-type: "{{ 'application/vnd.apple.mpegurl' if 'm3u8' in video else 'mp4' if 'mp4' in video else 'jpeg' if 'jpg' in attachment else 'gif' }}"
-                                          push:
-                                            sound:
-                                              name: "{{ iif(silent_update, 'none', sound) }}"
-                                              volume: "{{ iif((silent_update or sound == 'none'), 0, volume) }}"
-                                              critical: "{{ iif(critical, 1, 0) }}"
-                                          entity_id: "{{ios_live_view}}"
-                                          # Actions
-                                          actions:
-                                            - action: URI
-                                              title: "{{button_1}}"
-                                              uri: "{{url_1}}"
-                                              icon: "{{icon_1}}"
-                                            - action: URI
-                                              title: "{{button_2}}"
-                                              uri: "{{url_2}}"
-                                              icon: "{{icon_2}}"
-                                            - action: "{{ 'URI' if '/' in url_3 else url_3 }}"
-                                              title: "{{button_3}}"
-                                              uri: "{{url_3}}"
-                                              icon: "{{icon_3}}"
-                                              destructive: true
                               default:
                                 - action: "notify.{{ notify_group_target }}"
                                   data:
@@ -1850,12 +1647,6 @@ actions:
                                       sticky: "{{sticky}}"
                                       channel: "{{'alarm_stream' if critical else channel}}"
                                       car_ui: "{{android_auto}}"
-                                      # Android/Fire TV
-                                      fontsize: "{{tv_size}}"
-                                      position: "{{tv_position}}"
-                                      duration: "{{tv_duration}}"
-                                      transparency: "{{tv_transparency}}"
-                                      interrupt: "{{tv_interrupt}}"
                                       # iOS Specific
                                       subtitle: "{{subtitle}}"
                                       url: "{{tap_action}}"
