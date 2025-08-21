@@ -64,13 +64,13 @@ sensor:
         value_template: "{{ (states('sensor.dsmr_reading_electricity_currently_returned') | float(0) * 1000) | round(0) | round(2) }}"
 
       ##  smartmeter_last_changed
-      smartmeter_lastchanged:
-        friendly_name: "Wifi Signal Strength Last Changed"
-        value_template: >
-          {% set values = [
-            states.sensor.smartmeter_wifi_signal_strength_rssi.last_changed, ] %}
-          {{ values | min }}
-        device_class: timestamp
+#      smartmeter_lastchanged:
+#        friendly_name: "Wifi Signal Strength Last Changed"
+#        value_template: >
+#          {% set values = [
+#            states.sensor.smartmeter_wifi_signal_strength_rssi.last_changed, ] %}
+#          {{ values | min }}
+#        device_class: timestamp
 
       # Correction to current power sensors
       currently_power_usage_l1_watt:

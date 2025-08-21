@@ -514,58 +514,56 @@ views:
           - type: custom:mushroom-entity-card
             entity: switch.smartmeter_install_firmware_update
           - type: custom:mushroom-entity-card
-            entity: sensor.smartmeter_lastchanged
-          - type: custom:mushroom-entity-card
             entity: binary_sensor.smartmeter_connectivity_status
-  - type: masonry
-    path: cameras
-    title: Cameras
-    icon: mdi:cctv
-    cards:
-      - type: custom:mushroom-chips-card
-        chips:
-          - type: back
-      - type: vertical-stack
-        cards:
-          - type: custom:advanced-camera-card
-            cameras:
-              - camera_entity: camera.driveway
-          - type: custom:mushroom-entity-card
-            entity: sensor.driveway_last_notification
-          - type: custom:mushroom-entity-card
-            entity: counter.daily_driveway_notifications
-          - type: custom:mushroom-entity-card
-            entity: sensor.driveway_weekly_detections
-          - type: custom:mushroom-entity-card
-            entity: sensor.driveway_last_image
-          - type: picture-entity
-            show_state: true
-            show_name: true
-            camera_view: auto
-            fit_mode: cover
-            entity: sensor.driveway_last_image
-            image: h/local/images/no-image.png
-
-      - type: vertical-stack
-        cards:
-          - type: custom:advanced-camera-card
-            cameras:
-              - camera_entity: camera.backyard
-          - type: custom:mushroom-entity-card
-            entity: sensor.backyard_last_notification
-          - type: custom:mushroom-entity-card
-            entity: counter.daily_backyard_notifications
-          - type: custom:mushroom-entity-card
-            entity: sensor.backyard_weekly_detections
-          - type: custom:mushroom-entity-card
-            entity: sensor.backyard_last_image
-          - type: picture-entity
-            show_state: true
-            show_name: true
-            camera_view: auto
-            fit_mode: cover
-            entity: sensor.backyard_last_image
-            image: h/local/images/no-image.png
+#  - type: masonry
+#    path: cameras
+#    title: Cameras
+#    icon: mdi:cctv
+#    cards:
+#      - type: custom:mushroom-chips-card
+#        chips:
+#          - type: back
+#      - type: vertical-stack
+#        cards:
+#          - type: custom:advanced-camera-card
+#            cameras:
+#              - camera_entity: camera.driveway
+#          - type: custom:mushroom-entity-card
+#            entity: sensor.driveway_last_notification
+#          - type: custom:mushroom-entity-card
+#            entity: counter.daily_driveway_notifications
+#          - type: custom:mushroom-entity-card
+#            entity: sensor.driveway_weekly_detections
+#          - type: custom:mushroom-entity-card
+#            entity: sensor.driveway_last_image
+#          - type: picture-entity
+#            show_state: true
+#            show_name: true
+#            camera_view: auto
+#            fit_mode: cover
+#            entity: sensor.driveway_last_image
+#            image: h/local/images/no-image.png
+#
+#      - type: vertical-stack
+#        cards:
+#          - type: custom:advanced-camera-card
+#            cameras:
+#              - camera_entity: camera.backyard
+#          - type: custom:mushroom-entity-card
+#            entity: sensor.backyard_last_notification
+#          - type: custom:mushroom-entity-card
+#            entity: counter.daily_backyard_notifications
+#          - type: custom:mushroom-entity-card
+#            entity: sensor.backyard_weekly_detections
+#          - type: custom:mushroom-entity-card
+#            entity: sensor.backyard_last_image
+#          - type: picture-entity
+#            show_state: true
+#            show_name: true
+#            camera_view: auto
+#            fit_mode: cover
+#            entity: sensor.backyard_last_image
+#            image: h/local/images/no-image.png
   - type: masonry
     path: system
     title: System
