@@ -1,4 +1,104 @@
 ## Cameras Package
+
+# Schedule helper for backyard detection
+schedule:
+  backyard_detection_schedule:
+    name: "Backyard Detection Schedule"
+    monday:
+      - from: "00:00:00"
+        to: "08:00:00"
+    tuesday:
+      - from: "00:00:00"
+        to: "08:00:00"
+    wednesday:
+      - from: "00:00:00"
+        to: "08:00:00"
+    thursday:
+      - from: "00:00:00"
+        to: "08:00:00"
+    friday:
+      - from: "00:00:00"
+        to: "08:00:00"
+    saturday:
+      - from: "00:00:00"
+        to: "08:00:00"
+    sunday:
+      - from: "00:00:00"
+        to: "08:00:00"
+
+# Automation to control backyard detection switch based on schedule
+automation:
+  # Control backyard detection based on schedule state
+  - alias: "Control Backyard Detection - Schedule Based"
+    id: backyard_detection_schedule_control
+    description: "Turn backyard detection switch on/off based on schedule state"
+    trigger:
+      - platform: state
+        entity_id: schedule.backyard_detection_schedule
+    condition: []
+    action:
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: schedule.backyard_detection_schedule
+                state: "on"
+            sequence:
+              - service: switch.turn_on
+                target:
+                  entity_id: switch.backyard_detect
+              - service: system_log.write
+                data:
+                  message: "Backyard detection turned ON by schedule at {{ now().strftime('%H:%M:%S') }}"
+                  level: info
+          - conditions:
+              - condition: state
+                entity_id: schedule.backyard_detection_schedule
+                state: "off"
+            sequence:
+              - service: switch.turn_off
+                target:
+                  entity_id: switch.backyard_detect
+              - service: system_log.write
+                data:
+                  message: "Backyard detection turned OFF by schedule at {{ now().strftime('%H:%M:%S') }}"
+                  level: info
+
+  # Sync backyard detection state on Home Assistant startup
+  - alias: "Sync Backyard Detection on Startup"
+    id: sync_backyard_detection_startup
+    description: "Ensure backyard detection switch matches schedule on startup"
+    trigger:
+      - platform: homeassistant
+        event: start
+    condition: []
+    action:
+      - delay: "00:00:30"  # Wait 30 seconds for all entities to initialize
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: schedule.backyard_detection_schedule
+                state: "on"
+            sequence:
+              - service: switch.turn_on
+                target:
+                  entity_id: switch.backyard_detect
+              - service: system_log.write
+                data:
+                  message: "Backyard detection turned ON during startup sync"
+                  level: info
+          - conditions:
+              - condition: state
+                entity_id: schedule.backyard_detection_schedule
+                state: "off"
+            sequence:
+              - service: switch.turn_off
+                target:
+                  entity_id: switch.backyard_detect
+              - service: system_log.write
+                data:
+                  message: "Backyard detection turned OFF during startup sync"
+                  level: info
+
 #
 ## Input helpers for rate limiting
 #input_datetime:
