@@ -1,417 +1,417 @@
-# Cameras Package
-
-# Input helpers for rate limiting
-input_datetime:
-  last_notification_driveway:
-    name: "Last Notification Driveway"
-    has_date: true
-    has_time: true
-
-  last_notification_backyard:
-    name: "Last Notification Backyard"
-    has_date: true
-    has_time: true
-
-# Input text helpers to store notification history and image paths
-input_text:
-  driveway_last_image_path:
-    name: "Driveway Last Image Path"
-    max: 255
-    initial: ""
-
-  backyard_last_image_path:
-    name: "Backyard Last Image Path"
-    max: 255
-    initial: ""
-
-# Counter for tracking daily notifications
-counter:
-  daily_driveway_notifications:
-    name: "Daily Driveway Notifications"
-    icon: mdi:counter
-    initial: 0
-    step: 1
-
-  daily_backyard_notifications:
-    name: "Daily Backyard Notifications"
-    icon: mdi:counter
-    initial: 0
-    step: 1
-
-# History tracking sensors
-sensor:
-  - platform: history_stats
-    name: "Driveway Weekly Detections"
-    entity_id: binary_sensor.driveway_person_occupancy
-    state: 'on'
-    type: count
-    start: '{{ (now() - timedelta(days=7)).replace(hour=0, minute=0, second=0) }}'
-    end: '{{ now() }}'
-
-  - platform: history_stats
-    name: "Backyard Weekly Detections"
-    entity_id: binary_sensor.backyard_person_occupancy
-    state: 'on'
-    type: count
-    start: '{{ (now() - timedelta(days=7)).replace(hour=0, minute=0, second=0) }}'
-    end: '{{ now() }}'
-
-  # Template sensors for last notification info and images
-  - platform: template
-    sensors:
-      driveway_last_notification:
-        friendly_name: "Driveway Last Notification"
-        value_template: >
-          {% if states('input_datetime.last_notification_driveway') %}
-            {{ as_timestamp(states('input_datetime.last_notification_driveway')) | timestamp_custom('%Y-%m-%d %H:%M:%S') }}
-          {% else %}
-            Never
-          {% endif %}
-        icon_template: mdi:bell-outline
-
-      backyard_last_notification:
-        friendly_name: "Backyard Last Notification"
-        value_template: >
-          {% if states('input_datetime.last_notification_backyard') %}
-            {{ as_timestamp(states('input_datetime.last_notification_backyard')) | timestamp_custom('%Y-%m-%d %H:%M:%S') }}
-          {% else %}
-            Never
-          {% endif %}
-        icon_template: mdi:bell-outline
-
-      driveway_last_image:
-        friendly_name: "Driveway Last Detection Image"
-        value_template: >
-          {% if states('input_text.driveway_last_image_path') != 'unknown' and states('input_text.driveway_last_image_path') != '' %}
-            {{ states('input_text.driveway_last_image_path') }}
-          {% else %}
-            /local/images/no-image.png
-          {% endif %}
-        icon_template: mdi:camera
-
-      backyard_last_image:
-        friendly_name: "Backyard Last Detection Image"
-        value_template: >
-          {% if states('input_text.backyard_last_image_path') != 'unknown' and states('input_text.backyard_last_image_path') != '' %}
-            {{ states('input_text.backyard_last_image_path') }}
-          {% else %}
-            /local/images/no-image.png
-          {% endif %}
-        icon_template: mdi:camera
-
-# Automations for notifications
-automation:
-  # Driveway Detection Notification
-  - alias: "Frigate Driveway Detection Notification"
-    id: frigate_driveway_notification
-    description: "Send notification for Driveway detections with rate limiting"
-    trigger:
-      - platform: mqtt
-        topic: "frigate/events"
-    condition:
-      - condition: template
-        value_template: "{{ (trigger.payload | from_json).type == 'new' }}"
-      - condition: template
-        value_template: "{{ (trigger.payload | from_json).after.camera == 'Driveway' }}"
-      - condition: template
-        value_template: "{{ (trigger.payload | from_json).after.label == 'person' }}"
-      # Rate limit: only send notification if last one was more than 60 seconds ago
-      - condition: template
-        value_template: >
-          {% set last_notification = states('input_datetime.last_notification_driveway') %}
-          {% if last_notification == 'unknown' or last_notification == '' %}
-            true
-          {% else %}
-            {{ (now().timestamp() - as_timestamp(last_notification)) > 60 }}
-          {% endif %}
-    action:
-      # Store the parsed payload for reuse
-      - variables:
-          payload: "{{ trigger.payload | from_json }}"
-          event_id: "{{ (trigger.payload | from_json).after.id }}"
-
-      # Update last notification time
-      - service: input_datetime.set_datetime
-        target:
-          entity_id: input_datetime.last_notification_driveway
-        data:
-          datetime: "{{ now() }}"
-
-      # Increment daily counter
-      - service: counter.increment
-        target:
-          entity_id: counter.daily_driveway_notifications
-
-      # Download and store the image locally
-      - service: script.download_driveway_image
-        data:
-          event_id: "{{ event_id }}"
-
-      # Cleanup old images (keep only last 50)
-      - service: shell_command.cleanup_driveway_images
-
-      # Update image path for latest image tracking
-      - service: input_text.set_value
-        target:
-          entity_id: input_text.driveway_last_image_path
-        data:
-          value: "/local/images/driveway_{{ event_id }}.jpg"
-
-      # Send notification with image
-      - service: notify.mobile_app_sm_s918b  # Replace with your actual device name
-        data:
-          title: "🏠 Security Alert"
-          message: "Person detected on Driveway"
-          data:
-            # Frigate snapshot URL - adjust IP and camera name
-            #            image: "http://192.168.1.200:5000/api/driveway/latest.jpg?h=300"
-            image: "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"
-            # Actionable notifications
-            actions:
-              - action: "VIEW_DRIVEWAY_LIVE"
-                title: "View Live"
-                icon: sfsymbols:video
-              - action: "DISMISS_DRIVEWAY"
-                title: "Dismiss"
-                icon: sfsymbols:xmark
-            # Additional notification settings
-            push:
-              sound: default
-              badge: 0
-            group: "security-alerts"
-            tag: "driveway-detection"
-            # Make notification persistent until dismissed
-            persistent: true
-
-      # Create persistent notification in HA
-      - service: notify.persistent_notification
-        data:
-          title: "Security Event Logged"
-          message: >
-            Driveway detection at {{ now().strftime('%H:%M:%S') }}
-            Daily count: {{ states('counter.daily_driveway_notifications') }}
-
-  # Backyard Detection Notification (duplicate structure)
-  - alias: "Frigate Backyard Detection Notification"
-    id: frigate_backyard_notification
-    description: "Send notification for Backyard detections with rate limiting"
-    trigger:
-      - platform: mqtt
-        topic: "frigate/events"
-    condition:
-      - condition: template
-        value_template: "{{ (trigger.payload | from_json).type == 'new' }}"
-      - condition: template
-        value_template: "{{ (trigger.payload | from_json).after.camera == 'Backyard' }}"
-      - condition: template
-        value_template: "{{ (trigger.payload | from_json).after.label == 'person' }}"
-      - condition: template
-        value_template: >
-          {% set last_notification = states('input_datetime.last_notification_backyard') %}
-          {% if last_notification == 'unknown' or last_notification == '' %}
-            true
-          {% else %}
-            {{ (now().timestamp() - as_timestamp(last_notification)) > 60 }}
-          {% endif %}
-    action:
-      # Store the parsed payload for reuse
-      - variables:
-          payload: "{{ trigger.payload | from_json }}"
-          event_id: "{{ (trigger.payload | from_json).after.id }}"
-
-      - service: input_datetime.set_datetime
-        target:
-          entity_id: input_datetime.last_notification_backyard
-        data:
-          datetime: "{{ now() }}"
-
-      - service: counter.increment
-        target:
-          entity_id: counter.daily_backyard_notifications
-
-      # Download and store the image locally
-      - service: script.download_backyard_image
-        data:
-          event_id: "{{ event_id }}"
-
-      # Cleanup old images (keep only last 50)
-      - service: shell_command.cleanup_backyard_images
-
-      # Update image path for latest image tracking
-      - service: input_text.set_value
-        target:
-          entity_id: input_text.backyard_last_image_path
-        data:
-          value: "/local/images/backyard_{{ event_id }}.jpg"
-
-      - service: notify.mobile_app_sm_s918b  # Replace with your actual device name
-        data:
-          title: "🏠 Security Alert"
-          message: "Person detected on Backyard"
-          data:
-            #            image: "http://192.168.1.200:5000/api/backyard/latest.jpg?h=300"
-            image: "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"
-            actions:
-              - action: "VIEW_BACKYARD_LIVE"
-                title: "View Live"
-                icon: sfsymbols:video
-              - action: "DISMISS_BACKYARD"
-                title: "Dismiss"
-                icon: sfsymbols:xmark
-            push:
-              sound: default
-              badge: 0
-            group: "security-alerts"
-            tag: "backyard-detection"
-            persistent: true
-
-      - service: notify.persistent_notification
-        data:
-          title: "Security Event Logged"
-          message: >
-            Backyard detection at {{ now().strftime('%H:%M:%S') }}
-            Daily count: {{ states('counter.daily_backyard_notifications') }}
-
-  # Handle actionable notification responses
-  - alias: "Handle Security Notification Actions"
-    id: handle_security_notification_actions
-    description: "Handle responses to actionable security notifications"
-    trigger:
-      - platform: event
-        event_type: mobile_app_notification_action
-    condition:
-      - condition: template
-        value_template: "{{ trigger.event.data.action in ['VIEW_DRIVEWAY_LIVE', 'VIEW_BACKYARD_LIVE', 'DISMISS_DRIVEWAY', 'DISMISS_BACKYARD'] }}"
-    action:
-      - choose:
-          - conditions:
-              - condition: template
-                value_template: "{{ trigger.event.data.action == 'VIEW_DRIVEWAY_LIVE' }}"
-            sequence:
-              - service: notify.mobile_app_sm_s918b
-                data:
-                  message: "Opening Driveway live view..."
-                  data:
-                    url: "http://192.168.1.200:5000/cameras/Driveway"  # Adjust URL
-          - conditions:
-              - condition: template
-                value_template: "{{ trigger.event.data.action == 'VIEW_BACKYARD_LIVE' }}"
-            sequence:
-              - service: notify.mobile_app_sm_s918b
-                data:
-                  message: "Opening Backyard live view..."
-                  data:
-                    url: "http://192.168.1.200:5000/cameras/Backyard"  # Adjust URL
-        default:
-          - service: system_log.write
-            data:
-              message: "Security notification dismissed via {{ trigger.event.data.action }}"
-              level: info
-
-  # Setup images directory on startup
-  - alias: "Setup Images Directory"
-    id: setup_images_directory
-    description: "Create images directory on Home Assistant startup"
-    trigger:
-      - platform: homeassistant
-        event: start
-    action:
-      - service: shell_command.setup_images_directory
-      - service: system_log.write
-        data:
-          message: "Images directory created/verified on startup"
-          level: info
-
-  # Reset daily counters at midnight
-  - alias: "Reset Daily Security Counters"
-    id: reset_daily_security_counters
-    description: "Reset daily notification counters at midnight"
-    trigger:
-      - platform: time
-        at: "00:00:00"
-    action:
-      - service: counter.reset
-        target:
-          entity_id:
-            - counter.daily_driveway_notifications
-            - counter.daily_backyard_notifications
-
-  # Weekly cleanup automation (extra safety measure)
-  - alias: "Weekly Image Cleanup"
-    id: weekly_image_cleanup
-    description: "Weekly cleanup of old detection images"
-    trigger:
-      - platform: time
-        at: "03:00:00"  # 3 AM
-    condition:
-      - condition: time
-        weekday:
-          - sun  # Sunday
-    action:
-      - service: shell_command.cleanup_driveway_images
-      - service: shell_command.cleanup_backyard_images
-      - service: system_log.write
-        data:
-          message: "Weekly image cleanup completed"
-          level: info
-
-script:
-  download_driveway_image:
-    alias: "Download Driveway Image"
-    sequence:
-      - service: shell_command.download_image
-        data:
-          command: >
-            wget -O "/config/www/images/driveway_{{ event_id }}.jpg" 
-            "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"
-
-  download_backyard_image:
-    alias: "Download Backyard Image"
-    sequence:
-      - service: shell_command.download_image
-        data:
-          command: >
-            wget -O "/config/www/images/backyard_{{ event_id }}.jpg" 
-            "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"
-
-
-# Shell commands for downloading images and cleanup
-shell_command:
-  download_image: "{{ command }}"
-  cleanup_driveway_images: 'cd /config/www/images && ls -t driveway_*.jpg 2>/dev/null | tail -n +51 | xargs -r rm'
-  cleanup_backyard_images: 'cd /config/www/images && ls -t backyard_*.jpg 2>/dev/null | tail -n +51 | xargs -r rm'
-  setup_images_directory: 'mkdir -p /config/www/images'
-
-# Lovelace card configuration (optional - for dashboard)
-# Add this to your dashboard YAML or create via UI:
-# type: entities
-# title: Security Notifications Status
-# entities:
-#   - sensor.driveway_last_notification
-#   - sensor.backyard_last_notification
-#   - counter.daily_driveway_notifications
-#   - counter.daily_backyard_notifications
-#   - sensor.driveway_weekly_detections
-#   - sensor.backyard_weekly_detections
-#   - sensor.driveway_last_image
-#   - sensor.backyard_last_image
-# show_header_toggle: false
-
-# For a picture elements card showing the latest images:
-# type: picture-elements
-# image: /local/images/no-image.png
-# elements:
-#   - type: image
-#     entity: sensor.driveway_last_image
-#     image: "{{ states('sensor.driveway_last_image') }}"
-#     style:
-#       top: 25%
-#       left: 25%
-#       width: 40%
-#   - type: image
-#     entity: sensor.backyard_last_image
-#     image: "{{ states('sensor.backyard_last_image') }}"
-#     style:
-#       top: 25%
-#       left: 75%
-#       width: 40%
+## Cameras Package
+#
+## Input helpers for rate limiting
+#input_datetime:
+#  last_notification_driveway:
+#    name: "Last Notification Driveway"
+#    has_date: true
+#    has_time: true
+#
+#  last_notification_backyard:
+#    name: "Last Notification Backyard"
+#    has_date: true
+#    has_time: true
+#
+## Input text helpers to store notification history and image paths
+#input_text:
+#  driveway_last_image_path:
+#    name: "Driveway Last Image Path"
+#    max: 255
+#    initial: ""
+#
+#  backyard_last_image_path:
+#    name: "Backyard Last Image Path"
+#    max: 255
+#    initial: ""
+#
+## Counter for tracking daily notifications
+#counter:
+#  daily_driveway_notifications:
+#    name: "Daily Driveway Notifications"
+#    icon: mdi:counter
+#    initial: 0
+#    step: 1
+#
+#  daily_backyard_notifications:
+#    name: "Daily Backyard Notifications"
+#    icon: mdi:counter
+#    initial: 0
+#    step: 1
+#
+## History tracking sensors
+#sensor:
+#  - platform: history_stats
+#    name: "Driveway Weekly Detections"
+#    entity_id: binary_sensor.driveway_person_occupancy
+#    state: 'on'
+#    type: count
+#    start: '{{ (now() - timedelta(days=7)).replace(hour=0, minute=0, second=0) }}'
+#    end: '{{ now() }}'
+#
+#  - platform: history_stats
+#    name: "Backyard Weekly Detections"
+#    entity_id: binary_sensor.backyard_person_occupancy
+#    state: 'on'
+#    type: count
+#    start: '{{ (now() - timedelta(days=7)).replace(hour=0, minute=0, second=0) }}'
+#    end: '{{ now() }}'
+#
+#  # Template sensors for last notification info and images
+#  - platform: template
+#    sensors:
+#      driveway_last_notification:
+#        friendly_name: "Driveway Last Notification"
+#        value_template: >
+#          {% if states('input_datetime.last_notification_driveway') %}
+#            {{ as_timestamp(states('input_datetime.last_notification_driveway')) | timestamp_custom('%Y-%m-%d %H:%M:%S') }}
+#          {% else %}
+#            Never
+#          {% endif %}
+#        icon_template: mdi:bell-outline
+#
+#      backyard_last_notification:
+#        friendly_name: "Backyard Last Notification"
+#        value_template: >
+#          {% if states('input_datetime.last_notification_backyard') %}
+#            {{ as_timestamp(states('input_datetime.last_notification_backyard')) | timestamp_custom('%Y-%m-%d %H:%M:%S') }}
+#          {% else %}
+#            Never
+#          {% endif %}
+#        icon_template: mdi:bell-outline
+#
+#      driveway_last_image:
+#        friendly_name: "Driveway Last Detection Image"
+#        value_template: >
+#          {% if states('input_text.driveway_last_image_path') != 'unknown' and states('input_text.driveway_last_image_path') != '' %}
+#            {{ states('input_text.driveway_last_image_path') }}
+#          {% else %}
+#            /local/images/no-image.png
+#          {% endif %}
+#        icon_template: mdi:camera
+#
+#      backyard_last_image:
+#        friendly_name: "Backyard Last Detection Image"
+#        value_template: >
+#          {% if states('input_text.backyard_last_image_path') != 'unknown' and states('input_text.backyard_last_image_path') != '' %}
+#            {{ states('input_text.backyard_last_image_path') }}
+#          {% else %}
+#            /local/images/no-image.png
+#          {% endif %}
+#        icon_template: mdi:camera
+#
+## Automations for notifications
+#automation:
+#  # Driveway Detection Notification
+#  - alias: "Frigate Driveway Detection Notification"
+#    id: frigate_driveway_notification
+#    description: "Send notification for Driveway detections with rate limiting"
+#    trigger:
+#      - platform: mqtt
+#        topic: "frigate/events"
+#    condition:
+#      - condition: template
+#        value_template: "{{ (trigger.payload | from_json).type == 'new' }}"
+#      - condition: template
+#        value_template: "{{ (trigger.payload | from_json).after.camera == 'Driveway' }}"
+#      - condition: template
+#        value_template: "{{ (trigger.payload | from_json).after.label == 'person' }}"
+#      # Rate limit: only send notification if last one was more than 60 seconds ago
+#      - condition: template
+#        value_template: >
+#          {% set last_notification = states('input_datetime.last_notification_driveway') %}
+#          {% if last_notification == 'unknown' or last_notification == '' %}
+#            true
+#          {% else %}
+#            {{ (now().timestamp() - as_timestamp(last_notification)) > 60 }}
+#          {% endif %}
+#    action:
+#      # Store the parsed payload for reuse
+#      - variables:
+#          payload: "{{ trigger.payload | from_json }}"
+#          event_id: "{{ (trigger.payload | from_json).after.id }}"
+#
+#      # Update last notification time
+#      - service: input_datetime.set_datetime
+#        target:
+#          entity_id: input_datetime.last_notification_driveway
+#        data:
+#          datetime: "{{ now() }}"
+#
+#      # Increment daily counter
+#      - service: counter.increment
+#        target:
+#          entity_id: counter.daily_driveway_notifications
+#
+#      # Download and store the image locally
+#      - service: script.download_driveway_image
+#        data:
+#          event_id: "{{ event_id }}"
+#
+#      # Cleanup old images (keep only last 50)
+#      - service: shell_command.cleanup_driveway_images
+#
+#      # Update image path for latest image tracking
+#      - service: input_text.set_value
+#        target:
+#          entity_id: input_text.driveway_last_image_path
+#        data:
+#          value: "/local/images/driveway_{{ event_id }}.jpg"
+#
+#      # Send notification with image
+#      - service: notify.mobile_app_sm_s918b  # Replace with your actual device name
+#        data:
+#          title: "🏠 Security Alert"
+#          message: "Person detected on Driveway"
+#          data:
+#            # Frigate snapshot URL - adjust IP and camera name
+#            #            image: "http://192.168.1.200:5000/api/driveway/latest.jpg?h=300"
+#            image: "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"
+#            # Actionable notifications
+#            actions:
+#              - action: "VIEW_DRIVEWAY_LIVE"
+#                title: "View Live"
+#                icon: sfsymbols:video
+#              - action: "DISMISS_DRIVEWAY"
+#                title: "Dismiss"
+#                icon: sfsymbols:xmark
+#            # Additional notification settings
+#            push:
+#              sound: default
+#              badge: 0
+#            group: "security-alerts"
+#            tag: "driveway-detection"
+#            # Make notification persistent until dismissed
+#            persistent: true
+#
+#      # Create persistent notification in HA
+#      - service: notify.persistent_notification
+#        data:
+#          title: "Security Event Logged"
+#          message: >
+#            Driveway detection at {{ now().strftime('%H:%M:%S') }}
+#            Daily count: {{ states('counter.daily_driveway_notifications') }}
+#
+#  # Backyard Detection Notification (duplicate structure)
+#  - alias: "Frigate Backyard Detection Notification"
+#    id: frigate_backyard_notification
+#    description: "Send notification for Backyard detections with rate limiting"
+#    trigger:
+#      - platform: mqtt
+#        topic: "frigate/events"
+#    condition:
+#      - condition: template
+#        value_template: "{{ (trigger.payload | from_json).type == 'new' }}"
+#      - condition: template
+#        value_template: "{{ (trigger.payload | from_json).after.camera == 'Backyard' }}"
+#      - condition: template
+#        value_template: "{{ (trigger.payload | from_json).after.label == 'person' }}"
+#      - condition: template
+#        value_template: >
+#          {% set last_notification = states('input_datetime.last_notification_backyard') %}
+#          {% if last_notification == 'unknown' or last_notification == '' %}
+#            true
+#          {% else %}
+#            {{ (now().timestamp() - as_timestamp(last_notification)) > 60 }}
+#          {% endif %}
+#    action:
+#      # Store the parsed payload for reuse
+#      - variables:
+#          payload: "{{ trigger.payload | from_json }}"
+#          event_id: "{{ (trigger.payload | from_json).after.id }}"
+#
+#      - service: input_datetime.set_datetime
+#        target:
+#          entity_id: input_datetime.last_notification_backyard
+#        data:
+#          datetime: "{{ now() }}"
+#
+#      - service: counter.increment
+#        target:
+#          entity_id: counter.daily_backyard_notifications
+#
+#      # Download and store the image locally
+#      - service: script.download_backyard_image
+#        data:
+#          event_id: "{{ event_id }}"
+#
+#      # Cleanup old images (keep only last 50)
+#      - service: shell_command.cleanup_backyard_images
+#
+#      # Update image path for latest image tracking
+#      - service: input_text.set_value
+#        target:
+#          entity_id: input_text.backyard_last_image_path
+#        data:
+#          value: "/local/images/backyard_{{ event_id }}.jpg"
+#
+#      - service: notify.mobile_app_sm_s918b  # Replace with your actual device name
+#        data:
+#          title: "🏠 Security Alert"
+#          message: "Person detected on Backyard"
+#          data:
+#            #            image: "http://192.168.1.200:5000/api/backyard/latest.jpg?h=300"
+#            image: "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"
+#            actions:
+#              - action: "VIEW_BACKYARD_LIVE"
+#                title: "View Live"
+#                icon: sfsymbols:video
+#              - action: "DISMISS_BACKYARD"
+#                title: "Dismiss"
+#                icon: sfsymbols:xmark
+#            push:
+#              sound: default
+#              badge: 0
+#            group: "security-alerts"
+#            tag: "backyard-detection"
+#            persistent: true
+#
+#      - service: notify.persistent_notification
+#        data:
+#          title: "Security Event Logged"
+#          message: >
+#            Backyard detection at {{ now().strftime('%H:%M:%S') }}
+#            Daily count: {{ states('counter.daily_backyard_notifications') }}
+#
+#  # Handle actionable notification responses
+#  - alias: "Handle Security Notification Actions"
+#    id: handle_security_notification_actions
+#    description: "Handle responses to actionable security notifications"
+#    trigger:
+#      - platform: event
+#        event_type: mobile_app_notification_action
+#    condition:
+#      - condition: template
+#        value_template: "{{ trigger.event.data.action in ['VIEW_DRIVEWAY_LIVE', 'VIEW_BACKYARD_LIVE', 'DISMISS_DRIVEWAY', 'DISMISS_BACKYARD'] }}"
+#    action:
+#      - choose:
+#          - conditions:
+#              - condition: template
+#                value_template: "{{ trigger.event.data.action == 'VIEW_DRIVEWAY_LIVE' }}"
+#            sequence:
+#              - service: notify.mobile_app_sm_s918b
+#                data:
+#                  message: "Opening Driveway live view..."
+#                  data:
+#                    url: "http://192.168.1.200:5000/cameras/Driveway"  # Adjust URL
+#          - conditions:
+#              - condition: template
+#                value_template: "{{ trigger.event.data.action == 'VIEW_BACKYARD_LIVE' }}"
+#            sequence:
+#              - service: notify.mobile_app_sm_s918b
+#                data:
+#                  message: "Opening Backyard live view..."
+#                  data:
+#                    url: "http://192.168.1.200:5000/cameras/Backyard"  # Adjust URL
+#        default:
+#          - service: system_log.write
+#            data:
+#              message: "Security notification dismissed via {{ trigger.event.data.action }}"
+#              level: info
+#
+#  # Setup images directory on startup
+#  - alias: "Setup Images Directory"
+#    id: setup_images_directory
+#    description: "Create images directory on Home Assistant startup"
+#    trigger:
+#      - platform: homeassistant
+#        event: start
+#    action:
+#      - service: shell_command.setup_images_directory
+#      - service: system_log.write
+#        data:
+#          message: "Images directory created/verified on startup"
+#          level: info
+#
+#  # Reset daily counters at midnight
+#  - alias: "Reset Daily Security Counters"
+#    id: reset_daily_security_counters
+#    description: "Reset daily notification counters at midnight"
+#    trigger:
+#      - platform: time
+#        at: "00:00:00"
+#    action:
+#      - service: counter.reset
+#        target:
+#          entity_id:
+#            - counter.daily_driveway_notifications
+#            - counter.daily_backyard_notifications
+#
+#  # Weekly cleanup automation (extra safety measure)
+#  - alias: "Weekly Image Cleanup"
+#    id: weekly_image_cleanup
+#    description: "Weekly cleanup of old detection images"
+#    trigger:
+#      - platform: time
+#        at: "03:00:00"  # 3 AM
+#    condition:
+#      - condition: time
+#        weekday:
+#          - sun  # Sunday
+#    action:
+#      - service: shell_command.cleanup_driveway_images
+#      - service: shell_command.cleanup_backyard_images
+#      - service: system_log.write
+#        data:
+#          message: "Weekly image cleanup completed"
+#          level: info
+#
+#script:
+#  download_driveway_image:
+#    alias: "Download Driveway Image"
+#    sequence:
+#      - service: shell_command.download_image
+#        data:
+#          command: >
+#            wget -O "/config/www/images/driveway_{{ event_id }}.jpg"
+#            "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"
+#
+#  download_backyard_image:
+#    alias: "Download Backyard Image"
+#    sequence:
+#      - service: shell_command.download_image
+#        data:
+#          command: >
+#            wget -O "/config/www/images/backyard_{{ event_id }}.jpg"
+#            "http://192.168.1.200:5000/api/events/{{ event_id }}/snapshot.jpg?crop=1&quality=70"
+#
+#
+## Shell commands for downloading images and cleanup
+#shell_command:
+#  download_image: "{{ command }}"
+#  cleanup_driveway_images: 'cd /config/www/images && ls -t driveway_*.jpg 2>/dev/null | tail -n +51 | xargs -r rm'
+#  cleanup_backyard_images: 'cd /config/www/images && ls -t backyard_*.jpg 2>/dev/null | tail -n +51 | xargs -r rm'
+#  setup_images_directory: 'mkdir -p /config/www/images'
+#
+## Lovelace card configuration (optional - for dashboard)
+## Add this to your dashboard YAML or create via UI:
+## type: entities
+## title: Security Notifications Status
+## entities:
+##   - sensor.driveway_last_notification
+##   - sensor.backyard_last_notification
+##   - counter.daily_driveway_notifications
+##   - counter.daily_backyard_notifications
+##   - sensor.driveway_weekly_detections
+##   - sensor.backyard_weekly_detections
+##   - sensor.driveway_last_image
+##   - sensor.backyard_last_image
+## show_header_toggle: false
+#
+## For a picture elements card showing the latest images:
+## type: picture-elements
+## image: /local/images/no-image.png
+## elements:
+##   - type: image
+##     entity: sensor.driveway_last_image
+##     image: "{{ states('sensor.driveway_last_image') }}"
+##     style:
+##       top: 25%
+##       left: 25%
+##       width: 40%
+##   - type: image
+##     entity: sensor.backyard_last_image
+##     image: "{{ states('sensor.backyard_last_image') }}"
+##     style:
+##       top: 25%
+##       left: 75%
+##       width: 40%
