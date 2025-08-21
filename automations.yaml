@@ -48,7 +48,7 @@
 - alias: "Frigate Notifications - Thijs"
   id: frigate_notifications_thijs
   use_blueprint:
-    path: McZlik/frigate-notifier.yaml
+    path: SgtBatten/Beta.yaml
     input:
       camera:
         - camera.driveway
