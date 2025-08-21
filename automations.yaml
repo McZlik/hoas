@@ -46,7 +46,7 @@
   mode: single
 
 - alias: "Frigate Notifications - Thijs"
-  description: ""
+  id: frigate_notifications_thijs
   use_blueprint:
     path: SgtBatten/Stable.yaml
     input:
