@@ -1,0 +1,37 @@
+type: masonry
+path: hallway
+title: Hallway
+icon: mdi:coat-rack
+cards:
+  - type: custom:mushroom-chips-card
+    chips:
+      - type: back
+      - type: entity
+        entity: sensor.hallway_motion_sensor_illuminance
+        icon: mdi:brightness-5
+        use_entity_picture: false
+      - type: entity
+        entity: binary_sensor.hallway_motion_sensor_occupancy
+        use_entity_picture: false
+  - type: custom:advanced-camera-card
+    cameras:
+      - camera_entity: camera.driveway
+  - square: false
+    type: grid
+    cards:
+      - type: custom:mushroom-light-card
+        entity: light.hallway_light
+        icon: mdi:lightbulb
+        name: Hallway
+        show_brightness_control: false
+        show_color_control: false
+        use_light_color: false
+        collapsible_controls: true
+      - type: custom:mushroom-entity-card
+        entity: binary_sensor.hallway_motion_sensor_occupancy
+        name: Occupancy
+      - type: custom:mushroom-entity-card
+        entity: sensor.hallway_motion_sensor_illuminance
+        name: Illuminance
+    columns: 2
+subview: true

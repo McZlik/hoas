@@ -1,0 +1,63 @@
+type: masonry
+path: living-room
+title: Living Room
+icon: mdi:sofa
+cards:
+  - type: custom:mushroom-chips-card
+    chips:
+      - type: back
+      - type: entity
+        entity: sensor.living_room_temperature_temperature
+        use_entity_picture: false
+        icon: mdi:thermometer
+      - type: light
+        entity: light.living_room_dimmer
+        icon: mdi:lightbulb
+        use_light_color: false
+      - type: light
+        entity: light.dining_room_dimmer
+        icon: mdi:lightbulb
+  - type: custom:advanced-camera-card
+    cameras:
+      - camera_entity: camera.living
+  - type: horizontal-stack
+    cards:
+      - type: custom:mini-graph-card
+        name: Temperature
+        entities:
+          - entity: sensor.living_room_temperature_temperature
+            name: Temperature
+        show:
+          fill: true
+        hours_to_show: 12
+        points_per_hour: 2
+      - type: custom:mini-graph-card
+        name: Humidity
+        entities:
+          - entity: sensor.living_room_temperature_humidity
+            name: Humidity
+        show:
+          fill: true
+        hours_to_show: 12
+        points_per_hour: 2
+        line_color: blue
+  - square: false
+    type: grid
+    cards:
+      - type: custom:mushroom-light-card
+        entity: light.living_room_dimmer
+        icon: mdi:sofa
+        name: Living Room
+        show_brightness_control: true
+        show_color_control: false
+        use_light_color: false
+        collapsible_controls: true
+      - type: custom:mushroom-light-card
+        entity: light.dining_room_dimmer
+        icon: mdi:table-furniture
+        name: Dining Room
+        show_brightness_control: true
+        collapsible_controls: true
+    columns: 2
+    title: Lights
+subview: true

@@ -1,0 +1,134 @@
+title: Home
+type: masonry
+icon: mdi:home
+path: home
+cards:
+  - type: custom:mushroom-chips-card
+    chips:
+      - type: menu
+      - type: action
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/smartmeter
+        icon: mdi:speedometer
+      - type: action
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/cameras
+        icon: mdi:cctv
+      - type: action
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/system
+        icon: mdi:cog
+
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-person-card
+        entity: person.thijs
+        name: Thijs
+      - type: custom:mushroom-person-card
+        entity: person.sal
+        name: Sal
+  - square: false
+    type: grid
+    cards:
+      - type: custom:mushroom-template-card
+        primary: Living Room
+        icon: mdi:sofa
+        secondary: >-
+          {{ "🌡️ " ~ states("sensor.living_room_temperature_temperature") ~
+          " °C  💧 " ~ states("sensor.living_room_temperature_humidity") ~
+          "%" }}
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/living-room
+        badge_color: ''
+        icon_color: |-
+          {% if is_state('light.living_room_dimmer', 'on') %}
+            orange
+          {% else %}
+            grey
+          {% endif %}
+        hold_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        primary: Hallway
+        icon: mdi:coat-rack
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/hallway
+        badge_color: red
+        icon_color: |
+          {% if is_state('switch.hallway_light_switch', 'on') %}
+            orange
+          {% else %}
+            grey
+          {% endif %}
+        hold_action:
+          action: more-info
+        secondary: '{{states("sensor.hallway_motion_sensor_illuminance")}} lx'
+        badge_icon: >-
+          {% if is_state('binary_sensor.hallway_motion_sensor_occupancy',
+          'on') %}
+            mdi:motion-sensor
+          {% endif %}
+      - type: custom:mushroom-template-card
+        primary: Bathroom
+        icon: mdi:bathtub
+        secondary: >-
+          {{ "🌡️ " ~ states("sensor.bathroom_temperature_temperature") ~ "
+          °C  💧 " ~ states("sensor.bathroom_temperature_humidity") ~ "%" }}
+        badge_color: ''
+        hold_action:
+          action: more-info
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/bathroom
+        icon_color: grey
+      - type: custom:mushroom-template-card
+        primary: Bedroom
+        icon: mdi:bed
+        secondary: >-
+          {{ "🌡️ " ~ states("sensor.bedroom_temperature_temperature") ~ "
+          °C  💧 " ~ states("sensor.bedroom_temperature_humidity") ~ "%" }}
+        badge_color: ''
+        hold_action:
+          action: more-info
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/bedroom
+        icon_color: grey
+      - type: custom:mushroom-template-card
+        primary: Office
+        icon: mdi:desk
+        secondary: >-
+          {{ "🌡️ " ~ states("sensor.office_temperature_temperature") ~ "
+          °C  💧 " ~ states("sensor.office_temperature_humidity") ~ "%" }}
+        badge_color: ''
+        hold_action:
+          action: more-info
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/office.yaml
+        icon_color: |-
+          {% if is_state('light.office_ceiling_lamp_01', 'on') %}
+            orange
+          {% else %}
+            grey
+          {% endif %}
+      - type: custom:mushroom-template-card
+        primary: Backyard
+        icon: mdi:flower
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/backyard
+        badge_color: red
+        hold_action:
+          action: more-info
+        badge_icon: >-
+          {% if is_state('binary_sensor.backyard_all_occupancy', 'on') %}
+            mdi:motion-sensor
+          {% endif %}
+    columns: 2
+    title: Rooms

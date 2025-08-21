@@ -1,0 +1,30 @@
+type: masonry
+title: Bedroom
+path: bedroom
+icon: mdi:bed
+cards:
+  - type: custom:mushroom-chips-card
+    chips:
+      - type: back
+  - type: horizontal-stack
+    cards:
+      - type: custom:mini-graph-card
+        name: Temperature
+        entities:
+          - entity: sensor.bedroom_temperature_temperature
+            name: Temperature
+        show:
+          fill: true
+        hours_to_show: 12
+        points_per_hour: 2
+      - type: custom:mini-graph-card
+        name: Humidity
+        entities:
+          - entity: sensor.bedroom_temperature_humidity
+            name: Humidity
+        show:
+          fill: true
+        hours_to_show: 12
+        points_per_hour: 2
+        line_color: blue
+subview: true

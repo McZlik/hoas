@@ -1,0 +1,46 @@
+type: masonry
+title: Backyard
+path: backyard
+icon: mdi:flower
+cards:
+  - type: custom:mushroom-chips-card
+    chips:
+      - type: back
+  - type: custom:advanced-camera-card
+    cameras:
+      - camera_entity: camera.backyard
+  - square: false
+    type: grid
+    cards:
+      - type: custom:mushroom-entity-card
+        entity: binary_sensor.backyard_person_occupancy
+        name: Person occupancy
+        icon: mdi:account
+        icon_color: |-
+          {% if is_state('binary_sensor.backyard_person_occupancy', 'on') %}
+            orange
+          {% else %}
+            grey
+          {% endif %}
+      - type: custom:mushroom-entity-card
+        entity: binary_sensor.backyard_dog_occupancy
+        icon: mdi:dog
+        name: Dog occupancy
+        icon_color: |-
+          {% if is_state('binary_sensor.backyard_dog_occupancy', 'on') %}
+            orange
+          {% else %}
+            grey
+          {% endif %}
+      - type: custom:mushroom-entity-card
+        entity: binary_sensor.backyard_cat_occupancy
+        icon: mdi:cat
+        name: Cat occupancy
+        icon_color: |-
+          {% if is_state('binary_sensor.backyard_cat_occupancy', 'on') %}
+            orange
+          {% else %}
+            grey
+          {% endif %}
+    columns: 2
+subview: true
