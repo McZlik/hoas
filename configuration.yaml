@@ -25,12 +25,9 @@ recorder:
     event_types:
       - call_service # Don't record service calls
 
-# My own handmade automations
-automation manual:
-  - !include automations/blueprint-automations.yaml
-  - !include_dir_merge_list automations/regular/
-
-# Automations I create in the UI
+# Blueprint automations
+automation manual: !include automations/blueprint-automations.yaml
+# UI Automations
 automation ui: !include automations.yaml
 
 frontend:
