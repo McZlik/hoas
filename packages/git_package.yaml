@@ -2,9 +2,10 @@
 #  git_pull: 'git -C /config pull --ff-only'
 shell_command:
   git_pull: 'bash -c "cd /config && git fetch origin && git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)"'
-  replace_telegram_id: 'bash -c "TELEGRAM_ID=$(grep \"^telegram_chat_id:\" /config/secrets.yaml | sed \"s/telegram_chat_id:[[:space:]]*//\" | tr -d \"\\\"\\'\") && sed -i \"s/<telegram_chat_id>/$TELEGRAM_ID/g\" /config/automations.yaml"'
+  replace_telegram_id: >
+    bash -c "TELEGRAM_ID=$(grep '^telegram_chat_id:' /config/secrets.yaml | sed 's/telegram_chat_id:[[:space:]]*//' | tr -d '\"'\''') && sed -i 's/<telegram_chat_id>/'$TELEGRAM_ID'/g' /config/automations.yaml"
   get_last_commit: 'cd /config && git log -1 --pretty=format:"%s" > /tmp/last_commit.txt'
-
+  
 # Helper flag to indicate a restart is required
 input_boolean:
   restart_required:
