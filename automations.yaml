@@ -36,4 +36,4 @@
       sticky: true
       loiter_timer: 60
       telegram_base_url: http://homeassistant.internal
-      notify_telegram_chat_id: <telegram_chat_id>
+      notify_telegram_chat_id: "<telegram_chat_id>"
