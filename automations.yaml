@@ -22,7 +22,6 @@
       notify_device: e4405accf87ba6b900191d60c1299b05
       base_url: https://ha.mczlik.com
       telegram_base_url: http://homeassistant.internal
-      notify_telegram_chat_id: <telegram_chat_id>
       critical: "true"
       attachment: "{{base_url}}/api/frigate{{client_id}}/notifications/{{id}}/snapshot.jpg"
       attachment_2: ""
