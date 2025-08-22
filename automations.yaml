@@ -13,6 +13,7 @@
       ambient_light_options: ambient_light_option_enabled
 
 - alias: "Frigate Notifications"
+  id: frigate_notifications
   use_blueprint:
     path: SgtBatten/Beta.yaml
     input:
@@ -21,13 +22,12 @@
         - camera.backyard
       notify_device: e4405accf87ba6b900191d60c1299b05
       base_url: https://ha.mczlik.com
-      telegram_base_url: http://homeassistant.internal
       critical: "true"
-      attachment: "{{base_url}}/api/frigate{{client_id}}/notifications/{{id}}/snapshot.jpg"
-      attachment_2: ""
       video: >-
         {{base_url}}/api/frigate{{client_id}}/notifications/{{review_id}}/review_preview.gif?format=ts
       final_update: true
+      attachment_2: >-
+        {{base_url}}/api/frigate{{client_id}}/notifications/{{id}}/snapshot.jpg?bbox=1
       icon: >-
         mdi:{{'account-outline' if label == 'Person' else 'dog' if label == 'Dog'
         else 'cat' if label == 'Cat' else 'car' if label == 'Car' else
@@ -35,3 +35,5 @@
       android_auto: true
       sticky: true
       loiter_timer: 60
+      telegram_base_url: http://homeassistant.internal
+      notify_telegram_chat_id: ""
