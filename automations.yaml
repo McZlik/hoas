@@ -34,5 +34,6 @@
       loiter_timer: 60
       telegram_base_url: http://homeassistant.internal
       notify_telegram_chat_id: "<telegram_chat_id>"
-      attachment: "{{base_url}}/api/frigate{{client_id}}/notifications/{{id}}/snapshot.jpg"
+      attachment: >-
+        {{base_url}}/api/frigate{{client_id}}/notifications/{{id}}/snapshot.jpg
 
