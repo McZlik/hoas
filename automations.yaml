@@ -12,8 +12,7 @@
       ambient_light_sensor: sensor.hallway_motion_sensor_illuminance
       ambient_light_options: ambient_light_option_enabled
 
-- alias: "Frigate Notifications - Thijs"
-  id: frigate_notifications_thijs
+- alias: Frigate Notifications - Thijs
   use_blueprint:
     path: SgtBatten/Beta.yaml
     input:
@@ -35,3 +34,5 @@
       android_auto: true
       sticky: true
       loiter_timer: 60
+      telegram_base_url: http://homeassistant.internal
+      notify_telegram_chat_id: !secret telegram_chat_id
