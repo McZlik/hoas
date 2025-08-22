@@ -13,7 +13,6 @@
       ambient_light_options: ambient_light_option_enabled
 
 - alias: "Frigate Notifications - Thijs"
-  id: frigate_notifications_thijs
   use_blueprint:
     path: SgtBatten/Beta.yaml
     input:
@@ -26,8 +25,6 @@
       video: >-
         {{base_url}}/api/frigate{{client_id}}/notifications/{{review_id}}/review_preview.gif?format=ts
       final_update: true
-      attachment_2: >-
-        {{base_url}}/api/frigate{{client_id}}/notifications/{{id}}/snapshot.jpg?bbox=1
       icon: >-
         mdi:{{'account-outline' if label == 'Person' else 'dog' if label == 'Dog'
         else 'cat' if label == 'Cat' else 'car' if label == 'Car' else
@@ -36,4 +33,6 @@
       sticky: true
       loiter_timer: 60
       telegram_base_url: http://homeassistant.internal
-      notify_telegram_chat_id: ""
+      notify_telegram_chat_id: <telegram_chat_id>
+      attachment: "{{base_url}}/api/frigate{{client_id}}/notifications/{{id}}/snapshot.jpg"
+

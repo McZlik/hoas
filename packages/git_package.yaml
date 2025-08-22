@@ -2,7 +2,7 @@
 #  git_pull: 'git -C /config pull --ff-only'
 shell_command:
   git_pull: 'bash -c "cd /config && git fetch origin && git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)"'
-
+  replace_telegram_id: 'bash -c "TELEGRAM_ID=$(grep \"^telegram_chat_id:\" /config/secrets.yaml | sed \"s/telegram_chat_id:[[:space:]]*//\" | tr -d \"\\\"\\'\") && sed -i \"s/<telegram_chat_id>/$TELEGRAM_ID/g\" /config/automations.yaml"'
 
 # Helper flag to indicate a restart is required
 input_boolean:
@@ -32,6 +32,18 @@ script:
     icon: mdi:restart
     sequence:
       - service: homeassistant.restart
+    mode: single
+
+  replace_telegram_id:
+    alias: Replace Telegram ID
+    icon: mdi:telegram
+    sequence:
+      - service: shell_command.replace_telegram_id
+      - service: persistent_notification.create
+        data:
+          title: "Telegram ID Replaced"
+          message: "Successfully replaced <telegram_chat_id> placeholders with actual value from secrets.yaml"
+          notification_id: telegram_id_replace_notice
     mode: single
 
   # Optional: run git pull and send a mobile actionable notification to restart now or later

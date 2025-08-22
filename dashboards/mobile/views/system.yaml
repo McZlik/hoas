@@ -48,3 +48,20 @@ cards:
           icon:
             - width: 32px
             - height: 32px
+
+      - type: custom:button-card
+        name: Update Telegram Bot
+        icon: mdi:file-replace-outline
+        color_type: icon
+        color: var(--primary-color)
+        tap_action:
+          action: call-service
+          service: script.replace_telegram_id
+        styles:
+          card:
+            - padding: 12px
+          name:
+            - font-weight: 600
+          icon:
+            - width: 32px
+            - height: 32px
