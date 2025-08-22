@@ -25,11 +25,6 @@ recorder:
     event_types:
       - call_service # Don't record service calls
 
-telegram_bot:
-  - platform: broadcast
-    api_key: !secret telegram_bot_token
-    allowed_chat_ids:
-      - !secret telegram_chat_id
 
 automation: !include automations.yaml
 
