@@ -26,7 +26,7 @@ recorder:
       - call_service # Don't record service calls
 
 # My own handmade automations
-automation manual: !include_dir_merge_list automations/
+automation manual: !include_dir_list automations/
 
 # Automations I create in the UI
 automation ui: !include automations.yaml
