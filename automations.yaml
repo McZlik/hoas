@@ -12,7 +12,8 @@
       ambient_light_sensor: sensor.hallway_motion_sensor_illuminance
       ambient_light_options: ambient_light_option_enabled
 
-- alias: Frigate Notifications - Thijs
+- alias: "Frigate Notifications - Thijs"
+  id: frigate_notifications_thijs
   use_blueprint:
     path: SgtBatten/Beta.yaml
     input:
