@@ -5,7 +5,7 @@ shell_command:
   replace_telegram_id: >
     bash -c "TELEGRAM_ID=$(grep '^telegram_chat_id:' /config/secrets.yaml | sed 's/telegram_chat_id:[[:space:]]*//' | tr -d '\"'\''') && sed -i 's/<telegram_chat_id>/'$TELEGRAM_ID'/g' /config/automations.yaml"
   get_last_commit: 'cd /config && git log -1 --pretty=format:"%s" > /tmp/last_commit.txt'
-  
+
 # Helper flag to indicate a restart is required
 input_boolean:
   restart_required:
@@ -13,11 +13,11 @@ input_boolean:
     icon: mdi:restart-alert
 
 # Sensor to read the last commit message
-sensor:
-  - platform: command_line
+command_line:
+  sensor:
     name: Last Git Commit
     command: 'cat /tmp/last_commit.txt 2>/dev/null || echo "No commit info"'
-    scan_interval: 30
+    scan_interval: 30 # In seconds
 
 script:
   git_pull:
