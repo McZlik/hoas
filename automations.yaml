@@ -1,0 +1,13 @@
+- alias: Hallway Light Motion Extended (Blueprint)
+  id: hallway_light_motion_extended
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+        - binary_sensor.hallway_motion_sensor_occupancy
+      light_switch:
+        entity_id: light.hallway_light
+      time_delay: 0.5
+      include_ambient: ambient_enabled
+      ambient_light_sensor: sensor.hallway_motion_sensor_illuminance
+      ambient_light_options: ambient_light_option_enabled
