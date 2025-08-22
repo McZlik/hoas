@@ -32,6 +32,16 @@ cards:
               - width: 32px
               - height: 32px
 
+      - type: custom:mushroom-entity-card
+        entity: sensor.last_git_commit
+        name: Last Commit
+        icon: mdi:source-commit
+        secondary_info: last-updated
+        tap_action:
+          action: perform-action
+          perform_action: script.get_commit_info
+          target: { }
+
       - type: custom:button-card
         name: Git Pull
         icon: mdi:git

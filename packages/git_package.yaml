@@ -3,12 +3,20 @@
 shell_command:
   git_pull: 'bash -c "cd /config && git fetch origin && git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)"'
   replace_telegram_id: 'bash -c "TELEGRAM_ID=$(grep \"^telegram_chat_id:\" /config/secrets.yaml | sed \"s/telegram_chat_id:[[:space:]]*//\" | tr -d \"\\\"\\'\") && sed -i \"s/<telegram_chat_id>/$TELEGRAM_ID/g\" /config/automations.yaml"'
+  get_last_commit: 'cd /config && git log -1 --pretty=format:"%s" > /tmp/last_commit.txt'
 
 # Helper flag to indicate a restart is required
 input_boolean:
   restart_required:
     name: Restart Required
     icon: mdi:restart-alert
+
+# Sensor to read the last commit message
+sensor:
+  - platform: command_line
+    name: Last Git Commit
+    command: 'cat /tmp/last_commit.txt 2>/dev/null || echo "No commit info"'
+    scan_interval: 30
 
 script:
   git_pull:
@@ -45,6 +53,18 @@ script:
           message: "Successfully replaced <telegram_chat_id> placeholders with actual value from secrets.yaml"
           notification_id: telegram_id_replace_notice
     mode: single
+
+  get_commit_info:
+    alias: Get Last Commit
+    icon: mdi:git
+    sequence:
+      - service: shell_command.get_last_commit
+      - delay: "00:00:01"
+      - service: homeassistant.update_entity
+        target:
+          entity_id: sensor.last_git_commit
+    mode: single
+
 
   # Optional: run git pull and send a mobile actionable notification to restart now or later
 #  git_pull_mobile_prompt:
