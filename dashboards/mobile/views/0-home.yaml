@@ -110,7 +110,7 @@ cards:
           action: more-info
         tap_action:
           action: navigate
-          navigation_path: /lovelace/office.yaml
+          navigation_path: /lovelace/office
         icon_color: |-
           {% if is_state('light.office_ceiling_lamp_01', 'on') %}
             orange
