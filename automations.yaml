@@ -71,6 +71,7 @@
                 entity_id: switch.office_speaker_switch
 
 - alias: Poll LEDVANCE Energy every 5 min
+  id: poll_ledvance_switches
   mode: single
   trigger:
     - platform: time_pattern
