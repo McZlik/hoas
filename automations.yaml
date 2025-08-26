@@ -69,3 +69,22 @@
             - service: switch.turn_off
               target:
                 entity_id: switch.office_speaker_switch
+
+- alias: Poll LEDVANCE Energy every 5 min
+  mode: single
+  trigger:
+    - platform: time_pattern
+      minutes: "/5"
+  action:
+    - service: mqtt.publish
+      data:
+        topic: zigbee2mqtt/Office PC Switch/get
+        payload: '{"energy": ""}'
+    - service: mqtt.publish
+      data:
+        topic: zigbee2mqtt/Office Desk Switch/get
+        payload: '{"energy": ""}'
+    - service: mqtt.publish
+      data:
+        topic: zigbee2mqtt/Office Speaker Switch/get
+        payload: '{"energy": ""}'
