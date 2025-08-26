@@ -37,3 +37,35 @@
       loiter_timer: 60
       telegram_base_url: http://homeassistant.internal
       notify_telegram_chat_id: "<telegram_chat_id>"
+
+- alias: Office speakers follow PC power
+  id: office_speakers_follow_pc_power
+  mode: single
+  trigger:
+    - id: pc_high
+      platform: numeric_state
+      entity_id: sensor.office_pc_switch_power
+      above: 100
+      for: "00:01:00"
+    - id: pc_low
+      platform: numeric_state
+      entity_id: sensor.office_pc_switch_power
+      below: 30
+      for: "00:00:30"
+  condition: []
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: pc_high
+          sequence:
+            - service: switch.turn_on
+              target:
+                entity_id: switch.office_speaker_switch
+        - conditions:
+            - condition: trigger
+              id: pc_low
+          sequence:
+            - service: switch.turn_off
+              target:
+                entity_id: switch.office_speaker_switch
