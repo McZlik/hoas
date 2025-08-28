@@ -42,29 +42,31 @@
   id: office_speakers_follow_pc_power
   mode: single
   trigger:
-    - id: pc_high
-      platform: numeric_state
-      entity_id: sensor.office_pc_switch_power
-      above: 100
-      for: "00:01:00"
-    - id: pc_low
-      platform: numeric_state
-      entity_id: sensor.office_pc_switch_power
-      below: 30
-      for: "00:00:30"
+    - id: pc_high_speaker_off
+      platform: template
+      value_template: >-
+        {{ states('sensor.office_pc_switch_power')|float(0) > 100 
+           and is_state('switch.office_speaker_switch', 'off') }}
+      for: "00:00:20"
+    - id: pc_low_speaker_on
+      platform: template
+      value_template: >-
+        {{ states('sensor.office_pc_switch_power')|float(0) < 30 
+           and is_state('switch.office_speaker_switch', 'on') }}
+      for: "00:00:10"
   condition: []
   action:
     - choose:
         - conditions:
             - condition: trigger
-              id: pc_high
+              id: pc_high_speaker_off
           sequence:
             - service: switch.turn_on
               target:
                 entity_id: switch.office_speaker_switch
         - conditions:
             - condition: trigger
-              id: pc_low
+              id: pc_low_speaker_on
           sequence:
             - service: switch.turn_off
               target:
