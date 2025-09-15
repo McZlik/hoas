@@ -48,7 +48,7 @@ automation:
     action:
       - service: number.set_value
         target:
-          entity_id: number.office_radiator_external_temperature_input #<-- IMPORTANT: Change this!
+          entity_id: number.office_radiator_external_temperature_input #<-- Make sure this is correct
         data:
-          value: "{{ trigger.to_state.state }}"
+          value: "{{ states('sensor.office_temperature_temperature') }}"
     mode: single
