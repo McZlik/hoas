@@ -5,8 +5,11 @@ climate:
     name: "Office Thermostat"
     unique_id: office_thermostat_template
     modes:
+      - "auto"
       - "heat"
       - "off"
+    min_temp: 18
+    max_temp: 24
     # This reads the temperature from your external Zigbee sensor
     current_temperature_template: "{{ states('sensor.office_temperature_temperature') }}"
     # This reads the target temperature from your actual radiator thermostat
@@ -16,14 +19,12 @@ climate:
     # This defines what happens when you change the temperature on your new "Office Thermostat"
     set_temperature:
       - service: climate.set_temperature
-        target:
-          entity_id: climate.office_radiator
         data:
+          entity_id: climate.office_radiator
           temperature: "{{ temperature }}"
     # This defines what happens when you change the HVAC mode (heat/off)
     set_hvac_mode:
       - service: climate.set_hvac_mode
-        target:
-          entity_id: climate.office_radiator
         data:
+          entity_id: climate.office_radiator
           hvac_mode: "{{ hvac_mode }}"
