@@ -81,13 +81,13 @@
   action:
     - service: mqtt.publish
       data:
-        topic: zigbee2mqtt/Office PC Switch/get
+        topic: zigbee2mqtt/Office Switch PC/get
         payload: '{"energy": ""}'
     - service: mqtt.publish
       data:
-        topic: zigbee2mqtt/Office Desk Switch/get
+        topic: zigbee2mqtt/Office Switch Desk/get
         payload: '{"energy": ""}'
     - service: mqtt.publish
       data:
-        topic: zigbee2mqtt/Office Speaker Switch/get
+        topic: zigbee2mqtt/Office Switch Speaker/get
         payload: '{"energy": ""}'
