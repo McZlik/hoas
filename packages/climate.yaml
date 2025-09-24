@@ -35,12 +35,12 @@
 
 # Temperature Schedule Configuration
 input_boolean:
-  - living_room_schedule_enabled:
-      name: "Living Room Schedule Enabled"
-      icon: mdi:calendar-clock
-  - office_schedule_enabled:
-      name: "Office Schedule Enabled"
-      icon: mdi:calendar-clock
+  living_room_schedule_enabled:
+    name: "Living Room Schedule Enabled"
+    icon: mdi:calendar-clock
+  office_schedule_enabled:
+    name: "Office Schedule Enabled"
+    icon: mdi:calendar-clock
 
 template:
   - sensor:
