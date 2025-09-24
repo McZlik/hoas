@@ -158,6 +158,11 @@ automation:
       - condition: state
         entity_id: input_boolean.living_room_schedule_enabled
         state: "on"
+      # Only apply if the current temperature doesn't match what we want to set
+      - condition: template
+        value_template: >
+          {{ state_attr('climate.living_room_radiator', 'temperature') | float != 
+             states('sensor.living_room_scheduled_temperature') | float }}
     action:
       - service: climate.set_temperature
         target:
@@ -181,6 +186,11 @@ automation:
       - condition: state
         entity_id: input_boolean.office_schedule_enabled
         state: "on"
+      # Only apply if the current temperature doesn't match what we want to set
+      - condition: template
+        value_template: >
+          {{ state_attr('climate.office_radiator', 'temperature') | float != 
+             states('sensor.office_scheduled_temperature') | float }}
     action:
       - service: climate.set_temperature
         target:
