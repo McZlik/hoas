@@ -33,6 +33,77 @@
 #        data:
 #          hvac_mode: "{{ hvac_mode }}
 
+# Temperature Schedule Configuration
+input_boolean:
+  - living_room_schedule_enabled:
+      name: "Living Room Schedule Enabled"
+      icon: mdi:calendar-clock
+  - office_schedule_enabled:
+      name: "Office Schedule Enabled"
+      icon: mdi:calendar-clock
+
+template:
+  - sensor:
+      - name: "Living Room Scheduled Temperature"
+        unique_id: living_room_scheduled_temperature
+        state: |
+          {% if is_state('input_boolean.living_room_schedule_enabled', 'on') %}
+            {% set now = now() %}
+            {% set current_time = now.strftime('%H:%M') %}
+            {% set current_weekday = now.weekday() %}
+          
+            {# Monday=0, Sunday=6. Weekend is Saturday(5) and Sunday(6) #}
+            {% if current_weekday in [5, 6] %}
+              {# Weekend schedule #}
+              {% if '00:00' <= current_time < '10:00' %}
+                19
+              {% elif '10:00' <= current_time < '22:00' %}
+                21
+              {% else %}
+                19
+              {% endif %}
+            {% else %}
+              {# Weekday schedule #}
+              {% if '00:00' <= current_time < '17:00' %}
+                19
+              {% elif '17:00' <= current_time < '22:00' %}
+                21
+              {% else %}
+                19
+              {% endif %}
+            {% endif %}
+          {% else %}
+            19
+          {% endif %}
+        unit_of_measurement: "°C"
+        device_class: temperature
+
+      - name: "Office Scheduled Temperature"
+        unique_id: office_scheduled_temperature
+        state: |
+          {% if is_state('input_boolean.office_schedule_enabled', 'on') %}
+            {% set now = now() %}
+            {% set current_time = now.strftime('%H:%M') %}
+            {% set current_weekday = now.weekday() %}
+          
+            {# Monday=0, Sunday=6. Weekend is Saturday(5) and Sunday(6) #}
+            {% if current_weekday in [5, 6] %}
+              {# Weekend - always 19 #}
+              19
+            {% else %}
+              {# Weekday schedule #}
+              {% if '09:00' <= current_time < '17:00' %}
+                21
+              {% else %}
+                19
+              {% endif %}
+            {% endif %}
+          {% else %}
+            19
+          {% endif %}
+        unit_of_measurement: "°C"
+        device_class: temperature
+
 automation:
   - alias: "Sync Office External Temp to TRV"
     id: office_external_temp_to_trv
@@ -70,4 +141,113 @@ automation:
           entity_id: number.living_room_radiator_external_temperature_input #<-- Make sure this is correct
         data:
           value: "{{ states('sensor.living_room_temperature_temperature') }}"
+    mode: single
+
+  - alias: "Apply Living Room Temperature Schedule"
+    id: apply_living_room_schedule
+    description: "Automatically sets living room temperature based on schedule"
+    trigger:
+      - platform: time_pattern
+        minutes: "/5"  # Check every 5 minutes
+      - platform: state
+        entity_id: input_boolean.living_room_schedule_enabled
+        to: "on"
+      - platform: state
+        entity_id: sensor.living_room_scheduled_temperature
+    condition:
+      - condition: state
+        entity_id: input_boolean.living_room_schedule_enabled
+        state: "on"
+    action:
+      - service: climate.set_temperature
+        target:
+          entity_id: climate.living_room_radiator
+        data:
+          temperature: "{{ states('sensor.living_room_scheduled_temperature') | float }}"
+    mode: single
+
+  - alias: "Apply Office Temperature Schedule"
+    id: apply_office_schedule
+    description: "Automatically sets office temperature based on schedule"
+    trigger:
+      - platform: time_pattern
+        minutes: "/5"  # Check every 5 minutes
+      - platform: state
+        entity_id: input_boolean.office_schedule_enabled
+        to: "on"
+      - platform: state
+        entity_id: sensor.office_scheduled_temperature
+    condition:
+      - condition: state
+        entity_id: input_boolean.office_schedule_enabled
+        state: "on"
+    action:
+      - service: climate.set_temperature
+        target:
+          entity_id: climate.office_radiator
+        data:
+          temperature: "{{ states('sensor.office_scheduled_temperature') | float }}"
+    mode: single
+
+  - alias: "Living Room Presence Control"
+    id: living_room_presence_control
+    description: "Control living room heating based on presence of Thijs or Sal"
+    trigger:
+      - platform: state
+        entity_id: person.thijs
+      - platform: state
+        entity_id: person.sal
+      - platform: homeassistant
+        event: start
+    action:
+      - choose:
+          - conditions:
+              - condition: or
+                conditions:
+                  - condition: state
+                    entity_id: person.thijs
+                    state: "home"
+                  - condition: state
+                    entity_id: person.sal
+                    state: "home"
+            sequence:
+              - service: climate.set_hvac_mode
+                target:
+                  entity_id: climate.living_room_radiator
+                data:
+                  hvac_mode: "heat"
+        default:
+          - service: climate.set_hvac_mode
+            target:
+              entity_id: climate.living_room_radiator
+            data:
+              hvac_mode: "off"
+    mode: single
+
+  - alias: "Office Presence Control"
+    id: office_presence_control
+    description: "Control office heating based on Thijs presence"
+    trigger:
+      - platform: state
+        entity_id: person.thijs
+      - platform: homeassistant
+        event: start
+    action:
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: person.thijs
+                state: "home"
+            sequence:
+              - service: climate.set_hvac_mode
+                target:
+                  entity_id: climate.office_radiator
+                data:
+                  hvac_mode: "heat"
+        default:
+          - service: climate.set_hvac_mode
+            target:
+              entity_id: climate.office_radiator
+            data:
+              hvac_mode: "off"
     mode: single
