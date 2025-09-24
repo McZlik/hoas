@@ -89,5 +89,5 @@
         payload: '{"energy": ""}'
     - service: mqtt.publish
       data:
-        topic: zigbee2mqtt/Office Switch Speaker/get
+        topic: zigbee2mqtt/Office Switch Speakers/get
         payload: '{"energy": ""}'
