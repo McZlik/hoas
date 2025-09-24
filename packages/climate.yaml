@@ -52,3 +52,22 @@ automation:
         data:
           value: "{{ states('sensor.office_temperature_temperature') }}"
     mode: single
+
+  - alias: "Sync Living Room External Temp to TRV"
+    id: living_room_external_temp_to_trv
+    description: "Sends the external sensor temperature to the Sonoff TRV"
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.living_room_temperature_temperature
+    condition:
+      # This ensures we only send valid number values
+      - condition: template
+        value_template: "{{ trigger.to_state.state not in ['unavailable', 'unknown'] }}"
+    action:
+      - service: number.set_value
+        target:
+          entity_id: number.living_room_radiator_external_temperature_input #<-- Make sure this is correct
+        data:
+          value: "{{ states('sensor.living_room_temperature_temperature') }}"
+    mode: single
