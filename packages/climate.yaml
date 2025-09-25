@@ -33,6 +33,44 @@
 #        data:
 #          hvac_mode: "{{ hvac_mode }}
 
+# Temperature Configuration
+input_number:
+  living_room_temp_low:
+    name: "Living Room Low Temperature"
+    min: 15
+    max: 25
+    step: 0.5
+    initial: 19
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer-low
+
+  living_room_temp_high:
+    name: "Living Room High Temperature"
+    min: 15
+    max: 25
+    step: 0.5
+    initial: 21
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer-high
+
+  office_temp_low:
+    name: "Office Low Temperature"
+    min: 15
+    max: 25
+    step: 0.5
+    initial: 19
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer-low
+
+  office_temp_high:
+    name: "Office High Temperature"
+    min: 15
+    max: 25
+    step: 0.5
+    initial: 21
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer-high
+
 # Temperature Schedule Configuration
 input_boolean:
   living_room_schedule_enabled:
@@ -42,70 +80,52 @@ input_boolean:
     name: "Office Schedule Enabled"
     icon: mdi:calendar-clock
 
-template:
-  - sensor:
-      - name: "Living Room Scheduled Temperature"
-        unique_id: living_room_scheduled_temperature
-        state: |
-          {% if is_state('input_boolean.living_room_schedule_enabled', 'on') %}
-            {% set now = now() %}
-            {% set current_time = now.strftime('%H:%M') %}
-            {% set current_weekday = now.weekday() %}
-          
-            {# Monday=0, Sunday=6. Weekend is Saturday(5) and Sunday(6) #}
-            {% if current_weekday in [5, 6] %}
-              {# Weekend schedule #}
-              {% if '00:00' <= current_time < '10:00' %}
-                19
-              {% elif '10:00' <= current_time < '22:00' %}
-                21
-              {% else %}
-                19
-              {% endif %}
-            {% else %}
-              {# Weekday schedule #}
-              {% if '00:00' <= current_time < '17:00' %}
-                19
-              {% elif '17:00' <= current_time < '22:00' %}
-                21
-              {% else %}
-                19
-              {% endif %}
-            {% endif %}
-          {% else %}
-            19
-          {% endif %}
-        unit_of_measurement: "°C"
-        device_class: temperature
+# Schedule entities for temperature control
+schedule:
+  living_room_high_temp_schedule:
+    name: "Living Room High Temperature Schedule"
+    monday:
+      - from: "17:00:00"
+        to: "22:00:00"
+    tuesday:
+      - from: "17:00:00"
+        to: "22:00:00"
+    wednesday:
+      - from: "17:00:00"
+        to: "22:00:00"
+    thursday:
+      - from: "17:00:00"
+        to: "22:00:00"
+    friday:
+      - from: "17:00:00"
+        to: "22:00:00"
+    saturday:
+      - from: "10:00:00"
+        to: "22:00:00"
+    sunday:
+      - from: "10:00:00"
+        to: "22:00:00"
 
-      - name: "Office Scheduled Temperature"
-        unique_id: office_scheduled_temperature
-        state: |
-          {% if is_state('input_boolean.office_schedule_enabled', 'on') %}
-            {% set now = now() %}
-            {% set current_time = now.strftime('%H:%M') %}
-            {% set current_weekday = now.weekday() %}
-          
-            {# Monday=0, Sunday=6. Weekend is Saturday(5) and Sunday(6) #}
-            {% if current_weekday in [5, 6] %}
-              {# Weekend - always 19 #}
-              19
-            {% else %}
-              {# Weekday schedule #}
-              {% if '09:00' <= current_time < '17:00' %}
-                21
-              {% else %}
-                19
-              {% endif %}
-            {% endif %}
-          {% else %}
-            19
-          {% endif %}
-        unit_of_measurement: "°C"
-        device_class: temperature
+  office_high_temp_schedule:
+    name: "Office High Temperature Schedule"
+    monday:
+      - from: "09:00:00"
+        to: "17:00:00"
+    tuesday:
+      - from: "09:00:00"
+        to: "17:00:00"
+    wednesday:
+      - from: "09:00:00"
+        to: "17:00:00"
+    thursday:
+      - from: "09:00:00"
+        to: "17:00:00"
+    friday:
+      - from: "09:00:00"
+        to: "17:00:00"
 
 automation:
-  - alias: "Sync Office External Temp to TRV"
+  - alias: "Office Sync External Temp to TRV"
     id: office_external_temp_to_trv
     description: "Sends the external sensor temperature to the Sonoff TRV"
     trigger:
@@ -124,7 +144,7 @@ automation:
           value: "{{ states('sensor.office_temperature_temperature') }}"
     mode: single
 
-  - alias: "Sync Living Room External Temp to TRV"
+  - alias: "Living Room Sync External Temp to TRV"
     id: living_room_external_temp_to_trv
     description: "Sends the external sensor temperature to the Sonoff TRV"
     trigger:
@@ -143,60 +163,60 @@ automation:
           value: "{{ states('sensor.living_room_temperature_temperature') }}"
     mode: single
 
-  - alias: "Apply Living Room Temperature Schedule"
-    id: apply_living_room_schedule
-    description: "Automatically sets living room temperature based on schedule"
+  - alias: "Living Room Temperature Schedule Control"
+    id: living_room_temperature_schedule_control
+    description: "Control living room temperature based on schedule"
     trigger:
-      - platform: time_pattern
-        minutes: "/5"  # Check every 5 minutes
       - platform: state
-        entity_id: input_boolean.living_room_schedule_enabled
-        to: "on"
-      - platform: state
-        entity_id: sensor.living_room_scheduled_temperature
-    condition:
-      - condition: state
-        entity_id: input_boolean.living_room_schedule_enabled
-        state: "on"
-      # Only apply if the current temperature doesn't match what we want to set
-      - condition: template
-        value_template: >
-          {{ state_attr('climate.living_room_radiator', 'temperature') | float != 
-             states('sensor.living_room_scheduled_temperature') | float }}
+        entity_id: schedule.living_room_high_temp_schedule
+      - platform: homeassistant
+        event: start
     action:
-      - service: climate.set_temperature
-        target:
-          entity_id: climate.living_room_radiator
-        data:
-          temperature: "{{ states('sensor.living_room_scheduled_temperature') | float }}"
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: schedule.living_room_high_temp_schedule
+                state: "on"
+            sequence:
+              - service: climate.set_temperature
+                target:
+                  entity_id: climate.living_room_radiator
+                data:
+                  temperature: "{{ states('input_number.living_room_temp_high') | float }}"
+        default:
+          - service: climate.set_temperature
+            target:
+              entity_id: climate.living_room_radiator
+            data:
+              temperature: "{{ states('input_number.living_room_temp_low') | float }}"
     mode: single
 
-  - alias: "Apply Office Temperature Schedule"
-    id: apply_office_schedule
-    description: "Automatically sets office temperature based on schedule"
+  - alias: "Office Temperature Schedule Control"
+    id: office_temperature_schedule_control
+    description: "Control office temperature based on schedule"
     trigger:
-      - platform: time_pattern
-        minutes: "/5"  # Check every 5 minutes
       - platform: state
-        entity_id: input_boolean.office_schedule_enabled
-        to: "on"
-      - platform: state
-        entity_id: sensor.office_scheduled_temperature
-    condition:
-      - condition: state
-        entity_id: input_boolean.office_schedule_enabled
-        state: "on"
-      # Only apply if the current temperature doesn't match what we want to set
-      - condition: template
-        value_template: >
-          {{ state_attr('climate.office_radiator', 'temperature') | float != 
-             states('sensor.office_scheduled_temperature') | float }}
+        entity_id: schedule.office_high_temp_schedule
+      - platform: homeassistant
+        event: start
     action:
-      - service: climate.set_temperature
-        target:
-          entity_id: climate.office_radiator
-        data:
-          temperature: "{{ states('sensor.office_scheduled_temperature') | float }}"
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: schedule.office_high_temp_schedule
+                state: "on"
+            sequence:
+              - service: climate.set_temperature
+                target:
+                  entity_id: climate.office_radiator
+                data:
+                  temperature: "{{ states('input_number.office_temp_high') | float }}"
+        default:
+          - service: climate.set_temperature
+            target:
+              entity_id: climate.office_radiator
+            data:
+              temperature: "{{ states('input_number.office_temp_low') | float }}"
     mode: single
 
   - alias: "Living Room Presence Control"
