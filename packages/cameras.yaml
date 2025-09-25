@@ -34,7 +34,9 @@ automation:
     description: "Turn backyard detection switch on/off based on schedule state"
     trigger:
       - platform: state
-        entity_id: schedule.backyard_detection_schedule
+        entity_id:
+          - schedule.backyard_detection_schedule
+          - switch.backyard_detect
     condition: []
     action:
       - choose:
