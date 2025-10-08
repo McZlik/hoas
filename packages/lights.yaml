@@ -55,7 +55,7 @@ automation:
         entity_id:
           - binary_sensor.office_presence_occupancy
       - trigger: time_pattern
-        minutes: "/15"  # Check every 15 minutes
+        minutes: "/5"  # Check every 5 minutes for smooth transitions
       - trigger: sun
         event: sunrise
       - trigger: sun
@@ -71,22 +71,30 @@ automation:
         data:
           brightness_pct: >
             {% set now_hour = now().hour %}
-            {% set sun_elevation = state_attr('sun.sun', 'elevation') %}
+            {% set sun_elevation = state_attr('sun.sun', 'elevation') | float %}
             
             {# Work hours: 8 AM to 5 PM - full brightness #}
             {% if now_hour >= 8 and now_hour < 17 %}
               100
-            {# Evening hours: 5 PM to 10 PM - dim based on sun elevation #}
+            {# Evening hours: 5 PM to 10 PM - smooth dimming based on sun elevation #}
             {% elif now_hour >= 17 and now_hour < 22 %}
-              {% if sun_elevation > 10 %}
-                80
-              {% elif sun_elevation > 0 %}
-                60
-              {% elif sun_elevation > -10 %}
-                40
-              {% else %}
-                25
-              {% endif %}
+              {# Formula: maps sun elevation from 15° to -15° onto brightness range 80% to 25% #}
+              {# When sun_elevation = 15: brightness = 80% #}
+              {# When sun_elevation = -15: brightness = 25% #}
+              {% set max_elevation = 15 %}
+              {% set min_elevation = -15 %}
+              {% set max_brightness = 80 %}
+              {% set min_brightness = 25 %}
+            
+              {# Clamp elevation to our range #}
+              {% set clamped_elevation = [min_elevation, [max_elevation, sun_elevation] | min] | max %}
+            
+              {# Linear interpolation formula #}
+              {% set brightness_range = max_brightness - min_brightness %}
+              {% set elevation_range = max_elevation - min_elevation %}
+              {% set brightness = min_brightness + (brightness_range * (clamped_elevation - min_elevation) / elevation_range) %}
+            
+              {{ brightness | round(0) | int }}
             {# Night hours: 10 PM to 8 AM - very dim #}
             {% else %}
               15
