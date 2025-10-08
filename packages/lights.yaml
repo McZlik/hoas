@@ -66,7 +66,7 @@ automation:
                 metadata: { }
                 data: { }
                 target:
-                  entity_id: light.office_lights_group
+                  entity_id: light.office_lights
           - conditions:
               - condition: state
                 entity_id: binary_sensor.office_presence_occupancy
@@ -76,5 +76,5 @@ automation:
                 metadata: { }
                 data: { }
                 target:
-                  entity_id: light.office_lights_group
+                  entity_id: light.office_lights
 
