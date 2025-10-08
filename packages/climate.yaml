@@ -124,6 +124,48 @@ schedule:
       - from: "09:00:00"
         to: "17:00:00"
 
+# Combined Kitchen and Living Room Climate Control
+climate:
+  - platform: climate_template
+    name: "Living Room Thermostat"
+    unique_id: living_room_thermostat
+    modes:
+      - "auto"
+      - "heat"
+      - "off"
+    min_temp: 15
+    max: 25
+    # Use the living room temperature sensor as the main temperature source
+    current_temperature_template: "{{ states('sensor.living_room_temperature_temperature') | float(0) }}"
+    # Use a reasonable default target temperature
+    target_temperature_template: "{{ states('input_number.living_room_temp_high') | float(21) }}"
+    # Show heating if either radiator is heating
+    hvac_action_template: >
+      {% if state_attr('climate.living_room_radiator', 'hvac_action') == 'heating' or 
+            state_attr('climate.kitchen_convection_radiator', 'hvac_action') == 'heating' %}
+        heating
+      {% else %}
+        idle
+      {% endif %}
+    # When temperature is set, apply to both TRVs
+    set_temperature:
+      - service: climate.set_temperature
+        target:
+          entity_id:
+            - climate.living_room_radiator
+            - climate.kitchen_convection_radiator
+        data:
+          temperature: "{{ temperature }}"
+    # When HVAC mode is changed, apply to both TRVs
+    set_hvac_mode:
+      - service: climate.set_hvac_mode
+        target:
+          entity_id:
+            - climate.living_room_radiator
+            - climate.kitchen_convection_radiator
+        data:
+          hvac_mode: "{{ hvac_mode }}"
+
 automation:
   - alias: "Office Sync External Temp to TRV"
     id: office_external_temp_to_trv
@@ -144,28 +186,32 @@ automation:
           value: "{{ states('sensor.office_temperature_temperature') }}"
     mode: single
 
-  - alias: "Living Room Sync External Temp to TRV"
-    id: living_room_external_temp_to_trv
-    description: "Sends the external sensor temperature to the Sonoff TRV"
+  - alias: "Living Room and Kitchen Sync External Temp to TRVs"
+    id: living_room_kitchen_external_temp_to_trv
+    description: "Sends the living room external sensor temperature to both TRVs"
     trigger:
       - platform: state
         entity_id:
           - sensor.living_room_temperature_temperature
+      - platform: time_pattern
+        hours: "*"
+        minutes: 0
     condition:
-      # This ensures we only send valid number values
       - condition: template
-        value_template: "{{ trigger.to_state.state not in ['unavailable', 'unknown'] }}"
+        value_template: "{{ states('sensor.living_room_temperature_temperature') not in ['unavailable', 'unknown'] }}"
     action:
       - service: number.set_value
         target:
-          entity_id: number.living_room_radiator_external_temperature_input #<-- Make sure this is correct
+          entity_id:
+            - number.living_room_radiator_external_temperature_input
+            - number.kitchen_convection_radiator_external_temperature_input
         data:
           value: "{{ states('sensor.living_room_temperature_temperature') }}"
     mode: single
 
-  - alias: "Living Room Temperature Schedule Control"
-    id: living_room_temperature_schedule_control
-    description: "Control living room temperature based on schedule"
+  - alias: "Living Room Kitchen Temperature Schedule Control"
+    id: living_room_kitchen_temperature_schedule_control
+    description: "Control living room and kitchen temperature based on schedule using combined climate"
     trigger:
       - platform: state
         entity_id: schedule.living_room_high_temp_schedule
@@ -180,13 +226,13 @@ automation:
             sequence:
               - service: climate.set_temperature
                 target:
-                  entity_id: climate.living_room_radiator
+                  entity_id: climate.living_room_thermostat
                 data:
                   temperature: "{{ states('input_number.living_room_temp_high') | float }}"
         default:
           - service: climate.set_temperature
             target:
-              entity_id: climate.living_room_radiator
+              entity_id: climate.living_room_thermostat
             data:
               temperature: "{{ states('input_number.living_room_temp_low') | float }}"
     mode: single
@@ -219,9 +265,9 @@ automation:
               temperature: "{{ states('input_number.office_temp_low') | float }}"
     mode: single
 
-  - alias: "Living Room Presence Control"
-    id: living_room_presence_control
-    description: "Control living room heating based on presence of Thijs or Sal"
+  - alias: "Living Room Kitchen Presence Control"
+    id: living_room_kitchen_presence_control
+    description: "Control living room and kitchen heating based on presence using combined climate"
     trigger:
       - platform: state
         entity_id: person.thijs
@@ -243,13 +289,13 @@ automation:
             sequence:
               - service: climate.set_hvac_mode
                 target:
-                  entity_id: climate.living_room_radiator
+                  entity_id: climate.living_room_thermostat
                 data:
                   hvac_mode: "heat"
         default:
           - service: climate.set_hvac_mode
             target:
-              entity_id: climate.living_room_radiator
+              entity_id: climate.living_room_thermostat
             data:
               hvac_mode: "off"
     mode: single
