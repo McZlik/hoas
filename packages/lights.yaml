@@ -3,6 +3,7 @@ light:
     lights:
       hallway_light:
         friendly_name: "Hallway Light"
+        unique_id: hallway_light
         value_template: "{{ is_state('switch.hallway_light_switch', 'on') }}"
         turn_on:
           service: switch.turn_on
@@ -12,6 +13,14 @@ light:
           service: switch.turn_off
           target:
             entity_id: switch.hallway_light_switch
+
+  - platform: group
+    name: "Office Lights"
+    unique_id: office_lights_group
+    entities:
+      - light.office_ceiling_lamp_01
+      - light.office_ceiling_lamp_02
+      - light.office_ceiling_lamp_03
 
 automation:
   - alias: Sunset lights
@@ -36,3 +45,36 @@ automation:
         target:
           entity_id: light.living_room_dimmer
     mode: single
+
+  - alias: Office lights
+    id: office_lights
+    description: Turn on/off office lights based on presence
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id:
+          - binary_sensor.office_presence_occupancy
+    conditions: [ ]
+    actions:
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: binary_sensor.office_presence_occupancy
+                state: "on"
+            sequence:
+              - action: light.turn_on
+                metadata: { }
+                data: { }
+                target:
+                  entity_id: light.office_lights_group
+          - conditions:
+              - condition: state
+                entity_id: binary_sensor.office_presence_occupancy
+                state: "off"
+            sequence:
+              - action: light.turn_off
+                metadata: { }
+                data: { }
+                target:
+                  entity_id: light.office_lights_group
+
