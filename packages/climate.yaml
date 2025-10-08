@@ -135,6 +135,7 @@ climate:
       - "off"
     min_temp: 15
     max_temp: 25
+    temp_step: 0.5
     # Use the living room temperature sensor as the main temperature source
     current_temperature_template: "{{ states('sensor.living_room_temperature_temperature') | float(0) }}"
     # Use a reasonable default target temperature
