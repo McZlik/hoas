@@ -46,35 +46,65 @@ automation:
           entity_id: light.living_room_dimmer
     mode: single
 
-  - alias: Office lights
-    id: office_lights
-    description: Turn on/off office lights based on presence
+  - alias: Office lights dynamic brightness
+    id: office_lights_dynamic_brightness
+    description: Adjust office lights brightness based on sun position and time
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id:
+          - binary_sensor.office_presence_occupancy
+      - trigger: time_pattern
+        minutes: "/15"  # Check every 15 minutes
+      - trigger: sun
+        event: sunrise
+      - trigger: sun
+        event: sunset
+    conditions:
+      - condition: state
+        entity_id: binary_sensor.office_presence_occupancy
+        state: "on"
+    actions:
+      - action: light.turn_on
+        target:
+          entity_id: light.office_lights
+        data:
+          brightness_pct: >
+            {% set now_hour = now().hour %}
+            {% set sun_elevation = state_attr('sun.sun', 'elevation') %}
+            
+            {# Work hours: 8 AM to 5 PM - full brightness #}
+            {% if now_hour >= 8 and now_hour < 17 %}
+              100
+            {# Evening hours: 5 PM to 10 PM - dim based on sun elevation #}
+            {% elif now_hour >= 17 and now_hour < 22 %}
+              {% if sun_elevation > 10 %}
+                80
+              {% elif sun_elevation > 0 %}
+                60
+              {% elif sun_elevation > -10 %}
+                40
+              {% else %}
+                25
+              {% endif %}
+            {# Night hours: 10 PM to 8 AM - very dim #}
+            {% else %}
+              15
+            {% endif %}
+
+  - alias: Office lights presence
+    id: office_lights_presence
+    description: Turn off office lights when no presence
     mode: single
     triggers:
       - trigger: state
         entity_id:
           - binary_sensor.office_presence_occupancy
-    conditions: [ ]
+        to: "off"
+    conditions: []
     actions:
-      - choose:
-          - conditions:
-              - condition: state
-                entity_id: binary_sensor.office_presence_occupancy
-                state: "on"
-            sequence:
-              - action: light.turn_on
-                metadata: { }
-                data: { }
-                target:
-                  entity_id: light.office_lights
-          - conditions:
-              - condition: state
-                entity_id: binary_sensor.office_presence_occupancy
-                state: "off"
-            sequence:
-              - action: light.turn_off
-                metadata: { }
-                data: { }
-                target:
-                  entity_id: light.office_lights
+      - action: light.turn_off
+        target:
+          entity_id: light.office_lights
+
 
