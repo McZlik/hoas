@@ -26,92 +26,6 @@ mqtt:
       payload_on: "yes"
       payload_off: "no"
 
-sensor:
-  # Calculations per period
-  - platform: template
-    sensors:
-      daily_energy_delivered:
-        friendly_name: Daily Energy Delivered
-        unit_of_measurement: kWh
-        value_template: "{{ (states('sensor.daily_energy_delivered_offpeak') | float(0) + states('sensor.daily_energy_delivered_peak') | float(0)) | round(2) }}"
-      monthly_energy_delivered:
-        friendly_name: Monthly Energy Delivered
-        unit_of_measurement: kWh
-        value_template: "{{ (states('sensor.monthly_energy_delivered_offpeak') | float(0) + states('sensor.monthly_energy_delivered_peak') | float(0)) | round(2) }}"
-      daily_energy_returned:
-        friendly_name: Daily Energy Returned
-        unit_of_measurement: kWh
-        value_template: "{{ (states('sensor.daily_energy_returned_offpeak') | float(0) + states('sensor.daily_energy_returned_peak') | float(0)) | round(2) }}"
-      monthly_energy_returned:
-        friendly_name: Monthly Energy Returned
-        unit_of_measurement: kWh
-        value_template: "{{ (states('sensor.monthly_energy_returned_offpeak') | float(0) + states('sensor.monthly_energy_returned_peak') | float(0)) | round(2) }}"
-      hourly_energy_returned:
-        friendly_name: Hourly Energy Returned
-        unit_of_measurement: kWh
-        value_template: "{{ (states('sensor.hourly_energy_returned_offpeak') | float(0) + states('sensor.hourly_energy_returned_peak') | float(0)) | round(2) }}"
-
-      # dsmr_reading_electricity_currently_delivered_watt
-      currently_energy_delivered_watt:
-        friendly_name: "Current Energy usage"
-        unit_of_measurement: W
-        value_template: "{{ (states('sensor.dsmr_reading_electricity_currently_delivered') | float(0) * 1000) | round(0) | round(2) }}"
-
-      # dsmr_reading_electricity_currently_returned_watt
-      currently_energy_returned_watt:
-        friendly_name: "Current Energy return"
-        unit_of_measurement: W
-        value_template: "{{ (states('sensor.dsmr_reading_electricity_currently_returned') | float(0) * 1000) | round(0) | round(2) }}"
-
-      ##  smartmeter_last_changed
-#      smartmeter_lastchanged:
-#        friendly_name: "Wifi Signal Strength Last Changed"
-#        value_template: >
-#          {% set values = [
-#            states.sensor.smartmeter_wifi_signal_strength_rssi.last_changed, ] %}
-#          {{ values | min }}
-#        device_class: timestamp
-
-      # Correction to current power sensors
-      currently_power_usage_l1_watt:
-        friendly_name: "Power Usage L1"
-        unique_id: smartmeter_power_usage_l1_watt
-        device_class: power
-        unit_of_measurement: W
-        value_template: "{{ states('sensor.dsmr_reading_phase_currently_delivered_l1') | float(0) | round(0) }}"
-      currently_power_usage_l2_watt:
-        friendly_name: "Power Usage L2"
-        unique_id: smartmeter_power_usage_l2_watt
-        device_class: power
-        unit_of_measurement: W
-        value_template: "{{ states('sensor.dsmr_reading_phase_currently_delivered_l2') | float(0) | round(0) }}"
-      currently_power_usage_l3_watt:
-        friendly_name: "Power Usage L3"
-        unique_id: smartmeter_power_usage_l3_watt
-        device_class: power
-        unit_of_measurement: W
-        value_template: "{{ states('sensor.dsmr_reading_phase_currently_delivered_l3') | float(0) | round(0) }}"
-
-      currently_power_return_l1_watt:
-        friendly_name: "Power Return L1"
-        unique_id: smartmeter_power_return_l1_watt
-        device_class: power
-        unit_of_measurement: W
-        value_template: "{{ states('sensor.dsmr_reading_phase_currently_returned_l1') | float(0) | round(0) }}"
-      currently_power_return_l2_watt:
-        friendly_name: "Power Return L2"
-        unique_id: smartmeter_power_return_l2_watt
-        device_class: power
-        unit_of_measurement: W
-        value_template: "{{ states('sensor.dsmr_reading_phase_currently_returned_l2') | float(0) | round(0) }}"
-      currently_power_return_l3_watt:
-        friendly_name: "Power Return L3"
-        unique_id: smartmeter_power_return_l3_watt
-        device_class: power
-        unit_of_measurement: W
-        value_template: "{{ states('sensor.dsmr_reading_phase_currently_returned_l3') | float(0) | round(0) }}"
-
-
 ### Enable SmartGateways.nl SmartMeter Gateway - utility meter
 utility_meter:
   gasusage_this_hour:
@@ -216,6 +130,87 @@ utility_meter:
     cycle: monthly
 
 template:
+  - sensor:
+      # Calculations per period
+      - name: "Daily Energy Delivered"
+        default_entity_id: sensor.daily_energy_delivered
+        unit_of_measurement: kWh
+        state: "{{ (states('sensor.daily_energy_delivered_offpeak') | float(0) + states('sensor.daily_energy_delivered_peak') | float(0)) | round(2) }}"
+
+      - name: "Monthly Energy Delivered"
+        default_entity_id: sensor.monthly_energy_delivered
+        unit_of_measurement: kWh
+        state: "{{ (states('sensor.monthly_energy_delivered_offpeak') | float(0) + states('sensor.monthly_energy_delivered_peak') | float(0)) | round(2) }}"
+
+      - name: "Daily Energy Returned"
+        default_entity_id: sensor.daily_energy_returned
+        unit_of_measurement: kWh
+        state: "{{ (states('sensor.daily_energy_returned_offpeak') | float(0) + states('sensor.daily_energy_returned_peak') | float(0)) | round(2) }}"
+
+      - name: "Monthly Energy Returned"
+        default_entity_id: sensor.monthly_energy_returned
+        unit_of_measurement: kWh
+        state: "{{ (states('sensor.monthly_energy_returned_offpeak') | float(0) + states('sensor.monthly_energy_returned_peak') | float(0)) | round(2) }}"
+
+      - name: "Hourly Energy Returned"
+        default_entity_id: sensor.hourly_energy_returned
+        unit_of_measurement: kWh
+        state: "{{ (states('sensor.hourly_energy_returned_offpeak') | float(0) + states('sensor.hourly_energy_returned_peak') | float(0)) | round(2) }}"
+
+      # Current power sensors
+      - name: "Current Energy usage"
+        default_entity_id: sensor.currently_energy_delivered_watt
+        unit_of_measurement: W
+        state: "{{ (states('sensor.dsmr_reading_electricity_currently_delivered') | float(0) * 1000) | round(0) | round(2) }}"
+
+      - name: "Current Energy return"
+        default_entity_id: sensor.currently_energy_returned_watt
+        unit_of_measurement: W
+        state: "{{ (states('sensor.dsmr_reading_electricity_currently_returned') | float(0) * 1000) | round(0) | round(2) }}"
+
+      # Correction to current power sensors
+      - name: "Power Usage L1"
+        default_entity_id: sensor.currently_power_usage_l1_watt
+        unique_id: smartmeter_power_usage_l1_watt
+        device_class: power
+        unit_of_measurement: W
+        state: "{{ states('sensor.dsmr_reading_phase_currently_delivered_l1') | float(0) | round(0) }}"
+
+      - name: "Power Usage L2"
+        default_entity_id: sensor.currently_power_usage_l2_watt
+        unique_id: smartmeter_power_usage_l2_watt
+        device_class: power
+        unit_of_measurement: W
+        state: "{{ states('sensor.dsmr_reading_phase_currently_delivered_l2') | float(0) | round(0) }}"
+
+      - name: "Power Usage L3"
+        default_entity_id: sensor.currently_power_usage_l3_watt
+        unique_id: smartmeter_power_usage_l3_watt
+        device_class: power
+        unit_of_measurement: W
+        state: "{{ states('sensor.dsmr_reading_phase_currently_delivered_l3') | float(0) | round(0) }}"
+
+      - name: "Power Return L1"
+        default_entity_id: sensor.currently_power_return_l1_watt
+        unique_id: smartmeter_power_return_l1_watt
+        device_class: power
+        unit_of_measurement: W
+        state: "{{ states('sensor.dsmr_reading_phase_currently_returned_l1') | float(0) | round(0) }}"
+
+      - name: "Power Return L2"
+        default_entity_id: sensor.currently_power_return_l2_watt
+        unique_id: smartmeter_power_return_l2_watt
+        device_class: power
+        unit_of_measurement: W
+        state: "{{ states('sensor.dsmr_reading_phase_currently_returned_l2') | float(0) | round(0) }}"
+
+      - name: "Power Return L3"
+        default_entity_id: sensor.currently_power_return_l3_watt
+        unique_id: smartmeter_power_return_l3_watt
+        device_class: power
+        unit_of_measurement: W
+        state: "{{ states('sensor.dsmr_reading_phase_currently_returned_l3') | float(0) | round(0) }}"
+
   - binary_sensor:
       - name: "Smartmeter connectivity status"
         state: "{{ now() - states.sensor.smartmeter_wifi_signal_strength_rssi.last_changed < timedelta(minutes=10) }}"
