@@ -113,3 +113,12 @@ automation:
       - service: input_boolean.turn_off
         target:
           entity_id: input_boolean.restart_required
+          
+  - id: replace_telegram_id_on_start
+    alias: Replace Telegram ID on Start
+    trigger:
+      - platform: homeassistant
+        event: start
+    action:
+      - service: script.replace_telegram_id
+
