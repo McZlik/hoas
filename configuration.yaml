@@ -14,8 +14,8 @@ http:
 influxdb:
   api_version: 2
   ssl: false
-  host: influxdb-service.influxdb
-  port: 8086
+  host: influxdb-influxdb2.influxdb 
+  port: 80
   token: !secret influxdb_token
   organization: homeassistant
   bucket: homeassistant
@@ -23,10 +23,8 @@ influxdb:
     source: homeassistant
   tags_attributes:
     - friendly_name
-  # Only include specific entities to avoid overloading InfluxDB
   include:
     entity_globs:
-      # DSMR energy sensors (high-frequency data)
       - sensor.dsmr_*
       - sensor.currently_*
       - sensor.*_energy_*
