@@ -29,6 +29,7 @@ influxdb:
       - sensor.currently_*
       - sensor.*_energy_*
       - sensor.*_power_*
+      - sensor.*_wifi_*
     # Optionally add specific domains
     # domains:
     #   - sensor
@@ -38,8 +39,6 @@ influxdb:
 recorder:
   db_url: !secret psql_string
   db_retry_wait: 15
-  purge_keep_days: 7  # Reduced from default 10 days
-  auto_purge: true
   commit_interval: 1
   exclude:
     domains:
@@ -47,8 +46,8 @@ recorder:
       - updater
     entity_globs:
       - sensor.weather_*
-      - sensor.dsmr_*                    # Exclude DSMR from PostgreSQL (in InfluxDB)
-      - sensor.currently_*               # Exclude high-frequency energy sensors
+#      - sensor.dsmr_*                    # Exclude DSMR from PostgreSQL (in InfluxDB)
+#      - sensor.currently_*               # Exclude high-frequency energy sensors
       - sensor.*_wifi_*                  # Exclude WiFi signal sensors
       - image.*                          # Exclude Frigate image sensors
     entities:
