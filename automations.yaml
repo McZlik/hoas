@@ -57,13 +57,13 @@
   condition: []
   action:
     - choose:
-        - conditions:
-            - condition: trigger
-              id: pc_high_speaker_off
-          sequence:
-            - service: switch.turn_on
-              target:
-                entity_id: switch.office_switch_speakers
+#        - conditions:
+#            - condition: trigger
+#              id: pc_high_speaker_off
+#          sequence:
+#            - service: switch.turn_on
+#              target:
+#                entity_id: switch.office_switch_speakers
         - conditions:
             - condition: trigger
               id: pc_low_speaker_on
