@@ -36,7 +36,7 @@
       sticky: true
       loiter_timer: 60
       telegram_base_url: http://home-assistant.apps.home.arpa
-      notify_telegram_chat_id: "<telegram_chat_id>"
+      notify_telegram_chat_id: 1234567890987654321
 
 - alias: Office speakers follow PC power
   id: office_speakers_follow_pc_power
