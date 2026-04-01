@@ -29,4 +29,27 @@ cards:
         line_color: blue
   - type: thermostat
     entity: climate.office_radiator
+  - type: horizontal-stack
+    cards:
+      - show_name: true
+        show_icon: true
+        type: button
+        entity: switch.office_switch_pc
+        name: PC
+        show_state: false
+        tap_action:
+          action: none
+      - show_name: true
+        show_icon: true
+        type: button
+        entity: switch.office_switch_desk
+        name: Desk
+        tap_action:
+          action: none
+      - show_name: true
+        show_icon: true
+        type: button
+        entity: switch.office_switch_speakers
+        name: Speakers
+
 subview: true
