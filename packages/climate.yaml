@@ -67,7 +67,7 @@ input_number:
     min: 15
     max: 25
     step: 0.5
-    initial: 20.5
+    initial: 20
     unit_of_measurement: "°C"
     icon: mdi:thermometer-high
 
@@ -125,209 +125,209 @@ schedule:
         to: "17:00:00"
 
 # Combined Kitchen and Living Room Climate Control
-climate:
-  - platform: climate_template
-    name: "Living Room Thermostat"
-    unique_id: living_room_thermostat
-    modes:
-      - "auto"
-      - "heat"
-      - "off"
-    min_temp: 15
-    max_temp: 25
-    temp_step: 0.5
-    # Use the living room temperature sensor as the main temperature source
-    current_temperature_template: "{{ states('sensor.living_room_temperature_temperature') | float(0) }}"
-    # Use a reasonable default target temperature
-    target_temperature_template: "{{ states('input_number.living_room_temp_high') | float(21) }}"
-    # Show heating if either radiator is heating
-    hvac_action_template: >
-      {% if state_attr('climate.living_room_radiator', 'hvac_action') == 'heating' or 
-            state_attr('climate.kitchen_convection_radiator', 'hvac_action') == 'heating' %}
-        heating
-      {% else %}
-        idle
-      {% endif %}
-    # When temperature is set, apply to both TRVs
-    set_temperature:
-      - service: climate.set_temperature
-        target:
-          entity_id:
-            - climate.living_room_radiator
-            - climate.kitchen_convection_radiator
-        data:
-          temperature: "{{ temperature }}"
-    # When HVAC mode is changed, apply to both TRVs
-    set_hvac_mode:
-      - service: climate.set_hvac_mode
-        target:
-          entity_id:
-            - climate.living_room_radiator
-            - climate.kitchen_convection_radiator
-        data:
-          hvac_mode: "{{ hvac_mode }}"
-
-automation:
-  - alias: "Office Sync External Temp to TRV"
-    id: office_external_temp_to_trv
-    description: "Sends the external sensor temperature to the Sonoff TRV"
-    trigger:
-      - platform: state
-        entity_id:
-          - sensor.office_temperature_temperature
-      - platform: time_pattern
-        hours: "*"
-        minutes: 0
-    condition:
-      # This ensures we only send valid number values
-      - condition: template
-        value_template: "{{ trigger.to_state.state not in ['unavailable', 'unknown'] }}"
-    action:
-      - service: number.set_value
-        target:
-          entity_id: number.office_radiator_external_temperature_input #<-- Make sure this is correct
-        data:
-          value: "{{ states('sensor.office_temperature_temperature') }}"
-    mode: single
-
-  - alias: "Living Room and Kitchen Sync External Temp to TRVs"
-    id: living_room_kitchen_external_temp_to_trv
-    description: "Sends the living room external sensor temperature to both TRVs"
-    trigger:
-      - platform: state
-        entity_id:
-          - sensor.living_room_temperature_temperature
-      - platform: time_pattern
-        hours: "*"
-        minutes: 0
-    condition:
-      - condition: template
-        value_template: "{{ states('sensor.living_room_temperature_temperature') not in ['unavailable', 'unknown'] }}"
-    action:
-      - service: number.set_value
-        target:
-          entity_id:
-            - number.living_room_radiator_external_temperature_input
-            - number.kitchen_convection_radiator_external_temperature_input
-        data:
-          value: "{{ states('sensor.living_room_temperature_temperature') }}"
-    mode: single
-
-  - alias: "Living Room Kitchen Temperature Schedule Control"
-    id: living_room_kitchen_temperature_schedule_control
-    description: "Control living room and kitchen temperature based on schedule using combined climate"
-    trigger:
-      - platform: state
-        entity_id: schedule.living_room_high_temp_schedule
-      - platform: homeassistant
-        event: start
-    action:
-      - choose:
-          - conditions:
-              - condition: state
-                entity_id: schedule.living_room_high_temp_schedule
-                state: "on"
-            sequence:
-              - service: climate.set_temperature
-                target:
-                  entity_id: climate.living_room_thermostat
-                data:
-                  temperature: "{{ states('input_number.living_room_temp_high') | float }}"
-        default:
-          - service: climate.set_temperature
-            target:
-              entity_id: climate.living_room_thermostat
-            data:
-              temperature: "{{ states('input_number.living_room_temp_low') | float }}"
-    mode: single
-
-  - alias: "Office Temperature Schedule Control"
-    id: office_temperature_schedule_control
-    description: "Control office temperature based on schedule"
-    trigger:
-      - platform: state
-        entity_id: schedule.office_high_temp_schedule
-      - platform: homeassistant
-        event: start
-    action:
-      - choose:
-          - conditions:
-              - condition: state
-                entity_id: schedule.office_high_temp_schedule
-                state: "on"
-            sequence:
-              - service: climate.set_temperature
-                target:
-                  entity_id: climate.office_radiator
-                data:
-                  temperature: "{{ states('input_number.office_temp_high') | float }}"
-        default:
-          - service: climate.set_temperature
-            target:
-              entity_id: climate.office_radiator
-            data:
-              temperature: "{{ states('input_number.office_temp_low') | float }}"
-    mode: single
-
-  - alias: "Living Room Kitchen Presence Control"
-    id: living_room_kitchen_presence_control
-    description: "Control living room and kitchen heating based on presence using combined climate"
-    trigger:
-      - platform: state
-        entity_id: person.thijs
-      - platform: state
-        entity_id: person.sal
-      - platform: homeassistant
-        event: start
-    action:
-      - choose:
-          - conditions:
-              - condition: or
-                conditions:
-                  - condition: state
-                    entity_id: person.thijs
-                    state: "home"
-                  - condition: state
-                    entity_id: person.sal
-                    state: "home"
-            sequence:
-              - service: climate.set_hvac_mode
-                target:
-                  entity_id: climate.living_room_thermostat
-                data:
-                  hvac_mode: "heat"
-        default:
-          - service: climate.set_hvac_mode
-            target:
-              entity_id: climate.living_room_thermostat
-            data:
-              hvac_mode: "off"
-    mode: single
-
-  - alias: "Office Presence Control"
-    id: office_presence_control
-    description: "Control office heating based on Thijs presence"
-    trigger:
-      - platform: state
-        entity_id: person.thijs
-      - platform: homeassistant
-        event: start
-    action:
-      - choose:
-          - conditions:
-              - condition: state
-                entity_id: person.thijs
-                state: "home"
-            sequence:
-              - service: climate.set_hvac_mode
-                target:
-                  entity_id: climate.office_radiator
-                data:
-                  hvac_mode: "heat"
-        default:
-          - service: climate.set_hvac_mode
-            target:
-              entity_id: climate.office_radiator
-            data:
-              hvac_mode: "off"
-    mode: single
+#climate:
+#  - platform: climate_template
+#    name: "Living Room Thermostat"
+#    unique_id: living_room_thermostat
+#    modes:
+#      - "auto"
+#      - "heat"
+#      - "off"
+#    min_temp: 15
+#    max_temp: 25
+#    temp_step: 0.5
+#    # Use the living room temperature sensor as the main temperature source
+#    current_temperature_template: "{{ states('sensor.living_room_temperature_temperature') | float(0) }}"
+#    # Use a reasonable default target temperature
+#    target_temperature_template: "{{ states('input_number.living_room_temp_high') | float(21) }}"
+#    # Show heating if either radiator is heating
+#    hvac_action_template: >
+#      {% if state_attr('climate.living_room_radiator', 'hvac_action') == 'heating' or 
+#            state_attr('climate.kitchen_convection_radiator', 'hvac_action') == 'heating' %}
+#        heating
+#      {% else %}
+#        idle
+#      {% endif %}
+#    # When temperature is set, apply to both TRVs
+#    set_temperature:
+#      - service: climate.set_temperature
+#        target:
+#          entity_id:
+#            - climate.living_room_radiator
+#            - climate.kitchen_convection_radiator
+#        data:
+#          temperature: "{{ temperature }}"
+#    # When HVAC mode is changed, apply to both TRVs
+#    set_hvac_mode:
+#      - service: climate.set_hvac_mode
+#        target:
+#          entity_id:
+#            - climate.living_room_radiator
+#            - climate.kitchen_convection_radiator
+#        data:
+#          hvac_mode: "{{ hvac_mode }}"
+#
+#automation:
+#  - alias: "Office Sync External Temp to TRV"
+#    id: office_external_temp_to_trv
+#    description: "Sends the external sensor temperature to the Sonoff TRV"
+#    trigger:
+#      - platform: state
+#        entity_id:
+#          - sensor.office_temperature_temperature
+#      - platform: time_pattern
+#        hours: "*"
+#        minutes: 0
+#    condition:
+#      # This ensures we only send valid number values
+#      - condition: template
+#        value_template: "{{ trigger.to_state.state not in ['unavailable', 'unknown'] }}"
+#    action:
+#      - service: number.set_value
+#        target:
+#          entity_id: number.office_radiator_external_temperature_input #<-- Make sure this is correct
+#        data:
+#          value: "{{ states('sensor.office_temperature_temperature') }}"
+#    mode: single
+#
+#  - alias: "Living Room and Kitchen Sync External Temp to TRVs"
+#    id: living_room_kitchen_external_temp_to_trv
+#    description: "Sends the living room external sensor temperature to both TRVs"
+#    trigger:
+#      - platform: state
+#        entity_id:
+#          - sensor.living_room_temperature_temperature
+#      - platform: time_pattern
+#        hours: "*"
+#        minutes: 0
+#    condition:
+#      - condition: template
+#        value_template: "{{ states('sensor.living_room_temperature_temperature') not in ['unavailable', 'unknown'] }}"
+#    action:
+#      - service: number.set_value
+#        target:
+#          entity_id:
+#            - number.living_room_radiator_external_temperature_input
+#            - number.kitchen_convection_radiator_external_temperature_input
+#        data:
+#          value: "{{ states('sensor.living_room_temperature_temperature') }}"
+#    mode: single
+#
+#  - alias: "Living Room Kitchen Temperature Schedule Control"
+#    id: living_room_kitchen_temperature_schedule_control
+#    description: "Control living room and kitchen temperature based on schedule using combined climate"
+#    trigger:
+#      - platform: state
+#        entity_id: schedule.living_room_high_temp_schedule
+#      - platform: homeassistant
+#        event: start
+#    action:
+#      - choose:
+#          - conditions:
+#              - condition: state
+#                entity_id: schedule.living_room_high_temp_schedule
+#                state: "on"
+#            sequence:
+#              - service: climate.set_temperature
+#                target:
+#                  entity_id: climate.living_room_thermostat
+#                data:
+#                  temperature: "{{ states('input_number.living_room_temp_high') | float }}"
+#        default:
+#          - service: climate.set_temperature
+#            target:
+#              entity_id: climate.living_room_thermostat
+#            data:
+#              temperature: "{{ states('input_number.living_room_temp_low') | float }}"
+#    mode: single
+#
+#  - alias: "Office Temperature Schedule Control"
+#    id: office_temperature_schedule_control
+#    description: "Control office temperature based on schedule"
+#    trigger:
+#      - platform: state
+#        entity_id: schedule.office_high_temp_schedule
+#      - platform: homeassistant
+#        event: start
+#    action:
+#      - choose:
+#          - conditions:
+#              - condition: state
+#                entity_id: schedule.office_high_temp_schedule
+#                state: "on"
+#            sequence:
+#              - service: climate.set_temperature
+#                target:
+#                  entity_id: climate.office_radiator
+#                data:
+#                  temperature: "{{ states('input_number.office_temp_high') | float }}"
+#        default:
+#          - service: climate.set_temperature
+#            target:
+#              entity_id: climate.office_radiator
+#            data:
+#              temperature: "{{ states('input_number.office_temp_low') | float }}"
+#    mode: single
+#
+#  - alias: "Living Room Kitchen Presence Control"
+#    id: living_room_kitchen_presence_control
+#    description: "Control living room and kitchen heating based on presence using combined climate"
+#    trigger:
+#      - platform: state
+#        entity_id: person.thijs
+#      - platform: state
+#        entity_id: person.sal
+#      - platform: homeassistant
+#        event: start
+#    action:
+#      - choose:
+#          - conditions:
+#              - condition: or
+#                conditions:
+#                  - condition: state
+#                    entity_id: person.thijs
+#                    state: "home"
+#                  - condition: state
+#                    entity_id: person.sal
+#                    state: "home"
+#            sequence:
+#              - service: climate.set_hvac_mode
+#                target:
+#                  entity_id: climate.living_room_thermostat
+#                data:
+#                  hvac_mode: "heat"
+#        default:
+#          - service: climate.set_hvac_mode
+#            target:
+#              entity_id: climate.living_room_thermostat
+#            data:
+#              hvac_mode: "off"
+#    mode: single
+#
+#  - alias: "Office Presence Control"
+#    id: office_presence_control
+#    description: "Control office heating based on Thijs presence"
+#    trigger:
+#      - platform: state
+#        entity_id: person.thijs
+#      - platform: homeassistant
+#        event: start
+#    action:
+#      - choose:
+#          - conditions:
+#              - condition: state
+#                entity_id: person.thijs
+#                state: "home"
+#            sequence:
+#              - service: climate.set_hvac_mode
+#                target:
+#                  entity_id: climate.office_radiator
+#                data:
+#                  hvac_mode: "heat"
+#        default:
+#          - service: climate.set_hvac_mode
+#            target:
+#              entity_id: climate.office_radiator
+#            data:
+#              hvac_mode: "off"
+#    mode: single
