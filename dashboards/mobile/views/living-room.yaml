@@ -17,9 +17,9 @@ cards:
       - type: light
         entity: light.dining_room_dimmer
         icon: mdi:lightbulb
-  - type: custom:advanced-camera-card
-    cameras:
-      - camera_entity: camera.living
+#  - type: custom:advanced-camera-card
+#    cameras:
+#      - camera_entity: camera.living
   - type: horizontal-stack
     cards:
       - type: custom:mini-graph-card
