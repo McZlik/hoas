@@ -38,30 +38,34 @@ automation:
   - alias: "Cameras - Driveway Person Detection"
     id: driveway_person_detection
     description: "Driveway person detection automation"
-    variables:
-      cam: driveway
-      snapshot_file: "/media/reolink/{{ cam }}.jpg"
-      mqtt_topic: "reolink/{{ cam }}/snapshot"
     triggers:
       - trigger: state
-        entity_id:
-          - binary_sensor.driveway_person
-        to: "off"
-    action:
+        entity_id: binary_sensor.driveway_person
+        to: "on"
+    variables:
+      cam: driveway
+      snapshot_file: /config/www/reolink/{{ cam }}.jpg
+      image_url: https://ha.mczlik.com/local/reolink/{{ cam }}.jpg
+    actions:
       - action: camera.snapshot
-        metadata: { }
         target:
           entity_id: camera.driveway_fluent
         data:
           filename: "{{ snapshot_file }}"
-
-      - delay: 0.5
-
-      - action: shell_command.publish_snapshot
+      - delay:
+          milliseconds: 500
+      - action: mqtt.publish
         data:
-          camera: "{{ cam }}"
-          file: "{{ snapshot_file }}"
-
+          topic: reolink/{{ cam }}/snapshot
+          payload: |-
+            {{
+              {
+                "camera": cam,
+                "image_url": image_url,
+                "timestamp": now().isoformat()
+              } | tojson
+            }}
+  
   # Control backyard detection based on schedule state
 #  - alias: "Cameras - Control Backyard Detection - Schedule Based"
 #    id: backyard_detection_schedule_control
