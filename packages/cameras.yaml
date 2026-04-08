@@ -56,11 +56,13 @@ automation:
           milliseconds: 500
       - action: mqtt.publish
         data:
-          topic: reolink/{{ cam }}/snapshot
+          topic: reolink/{{ cam }}
           payload: |-
             {{
               {
                 "camera": cam,
+                "message_type": "snapshot",
+                "event_type": "person",
                 "image_url": image_url,
                 "timestamp": now().isoformat()
               } | tojson
