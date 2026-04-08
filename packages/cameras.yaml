@@ -43,10 +43,10 @@ automation:
       snapshot_file: "/media/reolink/{{ cam }}.jpg"
       mqtt_topic: "reolink/{{ cam }}/snapshot"
     triggers:
-      - type: turned_on
-        entity_id: binary_sensor.driveway_person
-        domain: binary_sensor
-        trigger: device
+      - trigger: state
+        entity_id:
+          - binary_sensor.driveway_person
+        to: "off"
     action:
       - action: camera.snapshot
         metadata: { }
