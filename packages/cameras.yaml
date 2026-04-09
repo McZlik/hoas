@@ -33,10 +33,19 @@ shell_command:
     -t "reolink/{{ camera }}/snapshot"
     -f "{{ file }}"
   delete_file: "rm -f '{{ file }}'"
+  delete_old_reolink_snapshots: >-
+    find /config/www/reolink -type f -name '*.jpg' -mtime +1 -delete
 
 
 # Automation to control backyard detection switch based on schedule
 automation:
+  - alias: "Cleanup old Reolink snapshots"
+    triggers:
+      - trigger: time
+        at: "03:00:00"
+    actions:
+      - action: shell_command.delete_old_reolink_snapshots
+        
   - alias: "Cameras - Driveway Person Detection"
     id: driveway_person_detection
     description: "Driveway person detection automation"
@@ -46,16 +55,11 @@ automation:
         to: "on"
     variables:
       cam: driveway
-      snapshot_file: "/config/www/reolink/{{ cam }}.jpg"
-      image_url: "https://ha.mczlik.com/local/reolink/{{ cam }}.jpg"
-    actions:
-      - action: shell_command.delete_file
-        data:
-          file: "{{ snapshot_file }}"
-          
-      - delay:
-          milliseconds: 500
-          
+      ts: "{{ now().strftime('%Y%m%d_%H%M%S_%f') }}"
+      file_name: "{{ cam }}_{{ ts }}.jpg"
+      snapshot_file: "/config/www/reolink/{{ file_name }}"
+      image_url: "https://ha.mczlik.com/local/reolink/{{ file_name }}"
+    actions:          
       - action: camera.snapshot
         target:
           entity_id: camera.driveway_fluent
