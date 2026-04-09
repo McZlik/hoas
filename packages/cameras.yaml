@@ -32,6 +32,7 @@ shell_command:
     -h 127.0.0.1
     -t "reolink/{{ camera }}/snapshot"
     -f "{{ file }}"
+  delete_file: "rm -f '{{ file }}'"
 
 
 # Automation to control backyard detection switch based on schedule
@@ -45,18 +46,25 @@ automation:
         to: "on"
     variables:
       cam: driveway
-      ts: "{{ now().strftime('%Y%m%d_%H%M%S') }}"
-      file_name: "{{ cam }}_{{ ts }}.jpg"
-      snapshot_file: /config/www/reolink/{{ file_name }}
-      image_url: https://ha.mczlik.com/local/reolink/{{ file_name }}
+      snapshot_file: "/config/www/reolink/{{ cam }}.jpg"
+      image_url: "https://ha.mczlik.com/local/reolink/{{ cam }}.jpg"
     actions:
+      - action: shell_command.delete_file
+        data:
+          file: "{{ snapshot_file }}"
+          
+      - delay:
+          milliseconds: 500
+          
       - action: camera.snapshot
         target:
           entity_id: camera.driveway_fluent
         data:
           filename: "{{ snapshot_file }}"
+          
       - delay:
           milliseconds: 500
+          
       - action: mqtt.publish
         data:
           topic: reolink/{{ cam }}
