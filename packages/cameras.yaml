@@ -40,6 +40,7 @@ shell_command:
 # Automation to control backyard detection switch based on schedule
 automation:
   - alias: "Cleanup old Reolink snapshots"
+    id: cleanup_reolink_snapshots
     triggers:
       - trigger: time
         at: "03:00:00"
