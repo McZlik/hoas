@@ -15,7 +15,7 @@ cards:
         use_entity_picture: false
   - type: custom:advanced-camera-card
     cameras:
-      - camera_entity: camera.driveway
+      - camera_entity: camera.driveway_fluent
   - square: false
     type: grid
     cards:

@@ -8,7 +8,7 @@ cards:
       - type: back
   - type: custom:advanced-camera-card
     cameras:
-      - camera_entity: camera.backyard
+      - camera_entity: camera.backyard_fluent
   - square: false
     type: grid
     cards:
