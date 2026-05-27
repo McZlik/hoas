@@ -10,40 +10,26 @@ cards:
     cards:
       - type: custom:advanced-camera-card
         cameras:
-          - camera_entity: camera.driveway
+          - camera_entity: camera.driveway_fluent
       - type: custom:mushroom-entity-card
-        entity: sensor.driveway_last_notification
+        entity: binary_sensor.driveway_motion
       - type: custom:mushroom-entity-card
-        entity: counter.daily_driveway_notifications
+        entity: binary_sensor.driveway_person
       - type: custom:mushroom-entity-card
-        entity: sensor.driveway_weekly_detections
+        entity: binary_sensor.driveway_animal
       - type: custom:mushroom-entity-card
-        entity: sensor.driveway_last_image
-      - type: picture-entity
-        show_state: true
-        show_name: true
-        camera_view: auto
-        fit_mode: cover
-        entity: sensor.driveway_last_image
-        image: h/local/images/no-image.png
+        entity: binary_sensor.driveway_vehicle
 
   - type: vertical-stack
     cards:
       - type: custom:advanced-camera-card
         cameras:
-          - camera_entity: camera.backyard
+          - camera_entity: camera.backyard_fluent
       - type: custom:mushroom-entity-card
-        entity: sensor.backyard_last_notification
+        entity: binary_sensor.backyard_motion
       - type: custom:mushroom-entity-card
-        entity: counter.daily_backyard_notifications
+        entity: binary_sensor.backyard_person
       - type: custom:mushroom-entity-card
-        entity: sensor.backyard_weekly_detections
+        entity: binary_sensor.backyard_animal
       - type: custom:mushroom-entity-card
-        entity: sensor.backyard_last_image
-      - type: picture-entity
-        show_state: true
-        show_name: true
-        camera_view: auto
-        fit_mode: cover
-        entity: sensor.backyard_last_image
-        image: h/local/images/no-image.png
+        entity: binary_sensor.backyard_vehicle
