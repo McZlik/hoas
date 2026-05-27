@@ -9,19 +9,19 @@ cards:
   - type: horizontal-stack
     cards:
       - type: custom:mini-graph-card
-        name: Humidity
+        name: Temperature
         entities:
           - entity: sensor.office_temperature_temperature
-            name: Humidity
+            name: Temperature
         show:
           fill: true
         hours_to_show: 12
         points_per_hour: 2
       - type: custom:mini-graph-card
-        name: Temperature
+        name: Humidity
         entities:
           - entity: sensor.office_temperature_humidity
-            name: Temperature
+            name: Humidity
         show:
           fill: true
         hours_to_show: 12
