@@ -33,9 +33,15 @@ automation:
       - action: light.turn_on
         metadata: {}
         data:
-          brightness_pct: 75
+          brightness_pct: 25
         target:
           entity_id: light.living_room_dimmer
+      - action: light.turn_on
+        metadata: {}
+        data:
+          brightness_pct: 25
+        target:
+          entity_id: light.tv_corner_light
     mode: single
 
   - alias: Office lights dynamic brightness
