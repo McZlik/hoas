@@ -55,6 +55,14 @@ cards:
         use_light_color: false
         collapsible_controls: true
       - type: custom:mushroom-light-card
+        entity: light.tv_corner_light_group
+        icon: mdi:sofa
+        name: TV Corner
+        show_brightness_control: true
+        show_color_control: true
+        use_light_color: true
+        collapsible_controls: true
+      - type: custom:mushroom-light-card
         entity: light.dining_room_dimmer
         icon: mdi:table-furniture
         name: Dining Room

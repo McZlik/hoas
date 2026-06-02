@@ -6,6 +6,13 @@ light:
       - light.office_ceiling_lamp_01
       - light.office_ceiling_lamp_02
       - light.office_ceiling_lamp_03
+  - platform: group
+    name: "TV Corner Light"
+    unique_id: tv_corner_light_group
+    entities:
+      - light.tv_light_top
+      - light.tv_light_middle
+      - light.tv_light_bottom
 
 automation:
   - alias: Sunset lights
