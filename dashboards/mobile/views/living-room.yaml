@@ -12,11 +12,16 @@ cards:
         icon: mdi:thermometer
       - type: light
         entity: light.living_room_dimmer
-        icon: mdi:lightbulb
+        icon: mdi:ceiling-light
         use_light_color: false
       - type: light
+        entity: light.tv_corner_light
+        icon: mdi:floor-lamp
+        use_light_color: true
+      - type: light
         entity: light.dining_room_dimmer
-        icon: mdi:lightbulb
+        icon: mdi:ceiling-light-multiple
+        use_light_color: false
 #  - type: custom:advanced-camera-card
 #    cameras:
 #      - camera_entity: camera.living
