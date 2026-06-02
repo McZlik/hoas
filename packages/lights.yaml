@@ -28,18 +28,22 @@ automation:
         metadata: {}
         data:
           brightness_pct: 25
+          transition: 10
         target:
           entity_id: light.dining_room_dimmer
       - action: light.turn_on
         metadata: {}
         data:
           brightness_pct: 25
+          transition: 10
         target:
           entity_id: light.living_room_dimmer
       - action: light.turn_on
         metadata: {}
         data:
-          brightness_pct: 25
+          brightness_pct: 10
+          color_temp_kelvin: 2702
+          transition: 10
         target:
           entity_id: light.tv_corner_light
     mode: single
