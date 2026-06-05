@@ -52,15 +52,15 @@ cards:
         line_color: blue
   - type: thermostat
     entity: climate.living_room_thermostat
-  - type: custom:mushroom-light-card
-    entity: light.ground_floor_lights
-    icon: mdi:lamps
-    name: Ground Floor Lights
-    fill_container: false
-    layout: vertical
-    grid_options:
-      columns: 12
-      rows: 2
+#  - type: custom:mushroom-light-card
+#    entity: light.ground_floor_lights
+#    icon: mdi:lamps
+#    name: Ground Floor Lights
+#    fill_container: false
+#    layout: vertical
+#    grid_options:
+#      columns: 12
+#      rows: 2
   - square: false
     type: grid
     cards:

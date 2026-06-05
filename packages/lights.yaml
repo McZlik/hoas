@@ -13,14 +13,14 @@ light:
       - light.tv_light_top
       - light.tv_light_middle
       - light.tv_light_bottom
-  - platform: group
-    name: "Ground floor Lights"
-    unique_id: ground_floor_lights_group
-    entities:
-      - light.living_room_dimmer
-      - light.tv_corner_light
-      - light.dining_room_dimmer
-      - light.kitchen_plant_light
+#  - platform: group
+#    name: "Ground floor Lights"
+#    unique_id: ground_floor_lights_group
+#    entities:
+#      - light.living_room_dimmer
+#      - light.tv_corner_light
+#      - light.dining_room_dimmer
+#      - light.kitchen_plant_light
 
 automation:
   - alias: Sunset lights
@@ -139,16 +139,16 @@ template:
           service: switch.turn_off
           target:
             entity_id: switch.hallway_light_switch
-  - light:
-      - name: "Kitchen Plant Light"
-        default_entity_id: light.kitchen_plant_switch
-        unique_id: kitchen_plant_light
-        state: "{{ is_state('switch.kitchen_plant_switch', 'on') }}"
-        turn_on:
-          service: switch.turn_on
-          target:
-            entity_id: switch.kitchen_plant_switch
-        turn_off:
-          service: switch.turn_off
-          target:
-            entity_id: switch.kitchen_plant_switch
+#  - light:
+#      - name: "Kitchen Plant Light"
+#        default_entity_id: light.kitchen_plant_switch
+#        unique_id: kitchen_plant_light
+#        state: "{{ is_state('switch.kitchen_plant_switch', 'on') }}"
+#        turn_on:
+#          service: switch.turn_on
+#          target:
+#            entity_id: switch.kitchen_plant_switch
+#        turn_off:
+#          service: switch.turn_off
+#          target:
+#            entity_id: switch.kitchen_plant_switch
