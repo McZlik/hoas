@@ -52,15 +52,6 @@ cards:
         line_color: blue
   - type: thermostat
     entity: climate.living_room_thermostat
-#  - type: custom:mushroom-light-card
-#    entity: light.ground_floor_lights
-#    icon: mdi:lamps
-#    name: Ground Floor Lights
-#    fill_container: false
-#    layout: vertical
-#    grid_options:
-#      columns: 12
-#      rows: 2
   - square: false
     type: grid
     cards:
@@ -87,7 +78,7 @@ cards:
         show_brightness_control: true
         collapsible_controls: true
       - type: custom:mushroom-light-card
-        entity: switch.kitchen_plant_switch
+        entity: light.kitchen_plant_light
         icon: mdi:flower
         name: Kitchen Plant
         show_brightness_control: false
@@ -95,4 +86,10 @@ cards:
     fill_container: true
     columns: 2
     title: Lights
+  - type: custom:mushroom-light-card
+    entity: light.ground_floor_lights
+    icon: mdi:lamps
+    name: Ground Floor Lights
+    fill_container: false
+    layout: horizontal
 subview: true
