@@ -61,6 +61,19 @@ automation:
           entity_id: light.kitchen_plant_light
     mode: single
 
+  - alias: Night lights off
+    id: night_lights_off
+    description: Turn off all ground floor lights at 00:30
+    triggers:
+      - trigger: time
+        at: "00:30:00"
+    conditions: []
+    actions:
+      - action: light.turn_off
+        target:
+          entity_id: light.ground_floor_lights
+    mode: single
+
   - alias: Office lights dynamic brightness
     id: office_lights_dynamic_brightness
     description: Adjust office lights brightness based on sun position and time
